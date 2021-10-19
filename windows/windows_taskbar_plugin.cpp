@@ -25,8 +25,6 @@
 #define UNICODE
 #endif
 
-#include <vector>
-
 #include <Windows.h>
 #include <strsafe.h>
 #include <ShObjIdl.h>
@@ -53,6 +51,8 @@ class WindowsTaskbarPlugin : public flutter::Plugin {
   virtual ~WindowsTaskbarPlugin();
 
  private:
+  static constexpr UINT kBaseThumbnailToolbarButtonId = 40001;
+  static constexpr UINT kMaximumButtonCount = 7;
   static constexpr auto kSetProgressMode = "SetProgressMode";
   static constexpr auto kSetProgress = "SetProgress";
   static constexpr auto kSetThumbnailToolbar = "SetThumbnailToolbar";
@@ -63,6 +63,7 @@ class WindowsTaskbarPlugin : public flutter::Plugin {
 
   flutter::PluginRegistrarWindows* registrar_;
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> channel_;
+  bool thumb_buttons_added_ = false;
 };
 
 void WindowsTaskbarPlugin::RegisterWithRegistrar(
@@ -88,9 +89,10 @@ WindowsTaskbarPlugin::WindowsTaskbarPlugin(
             case WM_COMMAND: {
               int const button_id = LOWORD(wparam);
               if (button_id > 40000) {
+                int32_t index = button_id - kBaseThumbnailToolbarButtonId;
                 channel_->InvokeMethod(
                     "WM_COMMAND",
-                    std::make_unique<flutter::EncodableValue>(button_id));
+                    std::make_unique<flutter::EncodableValue>(index));
               }
               break;
             }
@@ -136,29 +138,43 @@ void WindowsTaskbarPlugin::HandleMethodCall(
           hr = taskbar_list->ThumbBarSetImageList(
               ::GetAncestor(registrar_->GetView()->GetNativeWindow(), GA_ROOT),
               image_list);
-          auto thumb_buttons = std::make_unique<THUMBBUTTON[]>(buttons.size());
+          THUMBBUTTON thumb_buttons[kMaximumButtonCount];
           if (SUCCEEDED(hr)) {
-            for (int32_t i = 0; i < buttons.size(); i++) {
-              auto button = buttons[i];
-              auto data = std::get<flutter::EncodableMap>(button);
-              auto id = std::get<int32_t>(data[flutter::EncodableValue("id")]);
-              auto mode =
-                  std::get<int32_t>(data[flutter::EncodableValue("mode")]);
-              auto tooltip = std::get<std::string>(
-                  data[flutter::EncodableValue("tooltip")]);
-              thumb_buttons[i].dwMask = THB_BITMAP | THB_TOOLTIP | THB_FLAGS;
-              thumb_buttons[i].dwFlags = (THUMBBUTTONFLAGS)mode;
-              thumb_buttons[i].iId = (UINT)id;
-              thumb_buttons[i].iBitmap = i;
-              StringCchCopy(
-                  thumb_buttons[i].szTip, ARRAYSIZE(thumb_buttons[i].szTip),
-                  std::wstring(tooltip.begin(), tooltip.end()).c_str());
+            for (UINT i = 0; i < kMaximumButtonCount; i++) {
+              if (i < buttons.size()) {
+                auto button = buttons[i];
+                auto data = std::get<flutter::EncodableMap>(button);
+                auto mode =
+                    std::get<int32_t>(data[flutter::EncodableValue("mode")]);
+                auto tooltip = std::get<std::string>(
+                    data[flutter::EncodableValue("tooltip")]);
+                thumb_buttons[i].dwMask = THB_BITMAP | THB_TOOLTIP | THB_FLAGS;
+                thumb_buttons[i].dwFlags =
+                    (THUMBBUTTONFLAGS)mode | THBF_ENABLED;
+                thumb_buttons[i].iId = kBaseThumbnailToolbarButtonId + i;
+                thumb_buttons[i].iBitmap = i;
+                ::StringCchCopy(
+                    thumb_buttons[i].szTip, ARRAYSIZE(thumb_buttons[i].szTip),
+                    std::wstring(tooltip.begin(), tooltip.end()).c_str());
+              } else {
+                thumb_buttons[i].dwMask = THB_FLAGS;
+                thumb_buttons[i].dwFlags = THBF_HIDDEN;
+                thumb_buttons[i].iId = kBaseThumbnailToolbarButtonId + i;
+              }
             }
-            taskbar_list->ThumbBarAddButtons(
-                ::GetAncestor(registrar_->GetView()->GetNativeWindow(),
-                              GA_ROOT),
-                (UINT)buttons.size(), thumb_buttons.get());
-            ImageList_Destroy(image_list);
+            if (!thumb_buttons_added_) {
+              taskbar_list->ThumbBarAddButtons(
+                  ::GetAncestor(registrar_->GetView()->GetNativeWindow(),
+                                GA_ROOT),
+                  kMaximumButtonCount, thumb_buttons);
+              thumb_buttons_added_ = true;
+            } else {
+              taskbar_list->ThumbBarUpdateButtons(
+                  ::GetAncestor(registrar_->GetView()->GetNativeWindow(),
+                                GA_ROOT),
+                  kMaximumButtonCount, thumb_buttons);
+            }
+            ::ImageList_Destroy(image_list);
           }
         }
       }

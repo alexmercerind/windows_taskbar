@@ -36,7 +36,7 @@ final MethodChannel _kChannel =
         switch (call.method) {
           case 'WM_COMMAND':
             {
-              _callbacks[call.arguments]?.call();
+              _buttons[call.arguments].onClick.call();
               break;
             }
           default:
@@ -48,11 +48,9 @@ final MethodChannel _kChannel =
 /// Analog of `THUMBBUTTONFLAGS` in WIN32 API.
 ///
 class ThumbnailToolbarButtonMode {
-  static const int enabled = 0;
   static const int disabled = 0x1;
   static const int dismissionClick = 0x2;
   static const int noBackground = 0x4;
-  static const int hidden = 0x8;
   static const int nonInteractive = 0x10;
 }
 
@@ -88,30 +86,20 @@ class ThumbnailToolbarButton {
   final int mode;
 
   /// Called when button is clicked from the toolbar.
-  final void Function(ThumbnailToolbarButton) onClick;
-
-  /// Internally served id of the button.
-  late int id;
+  final void Function() onClick;
 
   ThumbnailToolbarButton(
     this.icon,
     this.tooltip,
     this.onClick, {
-    this.mode = ThumbnailToolbarButtonMode.enabled |
-        ThumbnailToolbarButtonMode.dismissionClick,
-  }) {
-    id = _thumbnailToolbarButtonId++;
-    _callbacks[id] = () {
-      onClick(this);
-    };
-  }
+    this.mode = 0x0,
+  });
 
   /// Conversion to `flutter::EncodableMap` for method channel transfer.
   Map<String, dynamic> toJson() => {
         'icon': icon.path,
         'tooltip': tooltip,
         'mode': mode,
-        'id': id,
       };
 }
 
@@ -125,18 +113,33 @@ class WindowsTaskbar {
   /// Takes list of thumbnail toolbar buttons.
   ///
   static Future<void> setThumbnailToolbar(
-      List<ThumbnailToolbarButton> buttons) async {
-    await _kChannel.invokeMethod(
+      List<ThumbnailToolbarButton> buttons) {
+    assert(buttons.length <= _kMaximumButtonCount);
+    _buttons = buttons;
+    return _kChannel.invokeMethod(
       _kSetThumbnailToolbar,
       {
-        'buttons': buttons.map((button) => button.toJson()).toList(),
+        'buttons': buttons.map((button) {
+          return button.toJson();
+        }).toList(),
+      },
+    );
+  }
+
+  /// Removes thumbnail toolbar for the taskbar app icon.
+  static Future<void> clearThumbnailToolbar() {
+    _buttons = [];
+    return _kChannel.invokeMethod(
+      _kSetThumbnailToolbar,
+      {
+        'buttons': [],
       },
     );
   }
 }
 
-/// Global index for creating new thumbnail toolbar buttons & assigning unique id.
-int _thumbnailToolbarButtonId = 40001;
+/// Maximum button count in the thumbnail toolbar.
+const int _kMaximumButtonCount = 7;
 
-/// Stores [ThumbnailToolbarButton.onClick] callbacks for invoking in future.
-Map<int, void Function()> _callbacks = {};
+/// Last [List] of thumbnail toolbar buttons passed to [WindowsTaskbar.setThumbnailToolbar].
+List<ThumbnailToolbarButton> _buttons = [];
