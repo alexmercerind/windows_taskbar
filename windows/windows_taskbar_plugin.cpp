@@ -56,6 +56,7 @@ class WindowsTaskbarPlugin : public flutter::Plugin {
   static constexpr auto kSetProgressMode = "SetProgressMode";
   static constexpr auto kSetProgress = "SetProgress";
   static constexpr auto kSetThumbnailToolbar = "SetThumbnailToolbar";
+  static constexpr auto kSetThumbnailTooltip = "SetThumbnailTooltip";
 
   void HandleMethodCall(
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
@@ -88,7 +89,8 @@ WindowsTaskbarPlugin::WindowsTaskbarPlugin(
           switch (message) {
             case WM_COMMAND: {
               int const button_id = LOWORD(wparam);
-              if (button_id > 40000) {
+              if (button_id > 40000 &&
+                  button_id <= 40000 + kMaximumButtonCount) {
                 int32_t index = button_id - kBaseThumbnailToolbarButtonId;
                 channel_->InvokeMethod(
                     "WM_COMMAND",
@@ -110,9 +112,34 @@ void WindowsTaskbarPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
   auto arguments = std::get<flutter::EncodableMap>(*method_call.arguments());
-  auto buttons = std::get<flutter::EncodableList>(
-      arguments[flutter::EncodableValue("buttons")]);
-  if (method_call.method_name().compare(kSetThumbnailToolbar) == 0) {
+  if (method_call.method_name().compare(kSetProgressMode) == 0) {
+    auto mode = std::get<int32_t>(arguments[flutter::EncodableValue("mode")]);
+    ITaskbarList3* taskbar_list;
+    HRESULT hr;
+    hr = ::CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER,
+                            IID_PPV_ARGS(&taskbar_list));
+    taskbar_list->SetProgressState(
+        ::GetAncestor(registrar_->GetView()->GetNativeWindow(), GA_ROOT),
+        static_cast<TBPFLAG>(mode));
+    taskbar_list->Release();
+    result->Success(flutter::EncodableValue(nullptr));
+  } else if (method_call.method_name().compare(kSetProgress) == 0) {
+    auto completed = (ULONGLONG)std::get<int32_t>(
+        arguments[flutter::EncodableValue("completed")]);
+    auto total = (ULONGLONG)std::get<int32_t>(
+        arguments[flutter::EncodableValue("total")]);
+    ITaskbarList3* taskbar_list;
+    HRESULT hr;
+    hr = ::CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER,
+                            IID_PPV_ARGS(&taskbar_list));
+    taskbar_list->SetProgressValue(
+        ::GetAncestor(registrar_->GetView()->GetNativeWindow(), GA_ROOT),
+        completed, total);
+    taskbar_list->Release();
+    result->Success(flutter::EncodableValue(nullptr));
+  } else if (method_call.method_name().compare(kSetThumbnailToolbar) == 0) {
+    auto buttons = std::get<flutter::EncodableList>(
+        arguments[flutter::EncodableValue("buttons")]);
     ITaskbarList3* taskbar_list;
     HRESULT hr;
     hr = ::CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER,
@@ -179,6 +206,19 @@ void WindowsTaskbarPlugin::HandleMethodCall(
         }
       }
     }
+    taskbar_list->Release();
+    result->Success(flutter::EncodableValue(nullptr));
+  } else if (method_call.method_name().compare(kSetThumbnailTooltip) == 0) {
+    auto tooltip =
+        std::get<std::string>(arguments[flutter::EncodableValue("tooltip")]);
+    ITaskbarList3* taskbar_list;
+    HRESULT hr;
+    hr = ::CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER,
+                            IID_PPV_ARGS(&taskbar_list));
+    taskbar_list->SetThumbnailTooltip(
+        ::GetAncestor(registrar_->GetView()->GetNativeWindow(), GA_ROOT),
+        std::wstring(tooltip.begin(), tooltip.end()).c_str());
+    taskbar_list->Release();
     result->Success(flutter::EncodableValue(nullptr));
   } else {
     result->NotImplemented();

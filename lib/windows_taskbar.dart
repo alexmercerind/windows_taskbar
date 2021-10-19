@@ -23,11 +23,17 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 
-const String _kSetProgressMode = "SetProgressMode";
-const String _kSetProgress = "SetProgress";
+/// Sets progress mode.
+const String _kSetProgressMode = 'SetProgressMode';
+
+/// Sets progress.
+const String _kSetProgress = 'SetProgress';
 
 /// Sets thumbnail toolbar.
-const String _kSetThumbnailToolbar = "SetThumbnailToolbar";
+const String _kSetThumbnailToolbar = 'SetThumbnailToolbar';
+
+/// Sets thumbnail tooltip.
+const String _kSetThumbnailTooltip = 'SetThumbnailTooltip';
 
 /// Method channel for making native WIN32 calls.
 final MethodChannel _kChannel =
@@ -48,10 +54,37 @@ final MethodChannel _kChannel =
 /// Analog of `THUMBBUTTONFLAGS` in WIN32 API.
 ///
 class ThumbnailToolbarButtonMode {
+  /// Disabled thumbnail toolbar button.
   static const int disabled = 0x1;
+
+  /// When enabled, the thumbnail is dismissed upon click.
   static const int dismissionClick = 0x2;
+
+  /// Do not draw a button border, use only the image.
   static const int noBackground = 0x4;
+
+  /// The button is enabled but not interactive; no pressed button state is drawn.
+  /// This value is intended for instances where the button is used in a notification.
+  ///
   static const int nonInteractive = 0x10;
+}
+
+/// Taskbar progress mode.
+class TaskbarProgressMode {
+  /// No progress state of taskbar app icon.
+  static const int noProgress = 0x0;
+
+  /// Indeterminate progress state of taskbar app icon.
+  static const int indeterminate = 0x1;
+
+  /// Normal progress state of taskbar app icon.
+  static const int normal = 0x2;
+
+  /// Errored progress state of taskbar app icon.
+  static const int error = 0x4;
+
+  /// Paused progress state of taskbar app icon.
+  static const int paused = 0x8;
 }
 
 /// Helper class to retrieve path of the icon asset.
@@ -109,8 +142,62 @@ class ThumbnailToolbarButton {
 /// Flutter plugin serving utilities related to Windows taskbar.
 ///
 class WindowsTaskbar {
+  /// Sets progress mode.
+  ///
+  /// ```dart
+  /// WindowsTaskbar.setProgressMode(TaskbarProgressMode.indeterminate);
+  /// ```
+  ///
+  static Future<void> setProgressMode(int mode) {
+    return _kChannel.invokeMethod(
+      _kSetProgressMode,
+      {
+        'mode': mode,
+      },
+    );
+  }
+
+  /// Sets progress.
+  ///
+  /// ```dart
+  /// WindowsTaskbar.setProgress(69, 100);
+  /// ```
+  ///
+  static Future<void> setProgress(int completed, int total) {
+    return _kChannel.invokeMethod(
+      _kSetProgress,
+      {
+        'completed': completed,
+        'total': total,
+      },
+    );
+  }
+
   /// Sets thumbnail toolbar for the taskbar app icon.
   /// Takes list of thumbnail toolbar buttons.
+  ///
+  /// ```dart
+  /// WindowsTaskbar.setThumbnailToolbar(
+  ///   [
+  ///     ThumbnailToolbarButton(
+  ///       ThumbnailToolbarAssetIcon('res/previous.ico'),
+  ///         'Button 1',
+  ///         () {},
+  ///       ),
+  ///       ThumbnailToolbarButton(
+  ///         ThumbnailToolbarAssetIcon('res/pause.ico'),
+  ///         'Button 2',
+  ///         () {},
+  ///         mode: ThumbnailToolbarButtonMode.disabled | ThumbnailToolbarButtonMode.dismissionClick,
+  ///      ),
+  ///      ThumbnailToolbarButton(
+  ///        ThumbnailToolbarAssetIcon('res/next.ico'),
+  ///        'Button 3',
+  ///        () {},
+  ///      ),
+  ///    ],
+  ///  );
+  /// ```
   ///
   static Future<void> setThumbnailToolbar(
       List<ThumbnailToolbarButton> buttons) {
@@ -133,6 +220,21 @@ class WindowsTaskbar {
       _kSetThumbnailToolbar,
       {
         'buttons': [],
+      },
+    );
+  }
+
+  /// Sets thumbnail tooltip.
+  ///
+  /// ```dart
+  /// WindowsTaskbar.setThumbnailTooltip('An awesome Flutter window.');
+  /// ```
+  ///
+  static Future<void> setThumbnailTooltip(String tooltip) {
+    return _kChannel.invokeMethod(
+      _kSetThumbnailTooltip,
+      {
+        'tooltip': tooltip,
       },
     );
   }

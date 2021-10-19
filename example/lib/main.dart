@@ -15,11 +15,15 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String? lastTooltip;
   String? lastIcon;
+  double value = 0.0;
 
   @override
   void initState() {
     super.initState();
     enableThumbnailToolbar();
+    WindowsTaskbar.setThumbnailTooltip('Awesome Flutter window.');
+    WindowsTaskbar.setProgress(69, 100);
+    WindowsTaskbar.setProgressMode(TaskbarProgressMode.indeterminate);
   }
 
   void enableThumbnailToolbar() {
@@ -152,6 +156,161 @@ class _MyAppState extends State<MyApp> {
                     ElevatedButton(
                       onPressed: WindowsTaskbar.clearThumbnailToolbar,
                       child: Text('Clear'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Card(
+              elevation: 2.0,
+              margin: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'WindowsTaskbar.setProgressMode',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Text(
+                      'Sets progress mode.',
+                    ),
+                    const SizedBox(
+                      height: 12.0,
+                    ),
+                    Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            WindowsTaskbar.setProgressMode(
+                                TaskbarProgressMode.error);
+                          },
+                          child: const Text('error'),
+                        ),
+                        const SizedBox(
+                          width: 4.0,
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            WindowsTaskbar.setProgressMode(
+                                TaskbarProgressMode.indeterminate);
+                          },
+                          child: const Text('indeterminate'),
+                        ),
+                        const SizedBox(
+                          width: 4.0,
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            WindowsTaskbar.setProgressMode(
+                                TaskbarProgressMode.noProgress);
+                          },
+                          child: const Text('noProgress'),
+                        ),
+                        const SizedBox(
+                          width: 4.0,
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            WindowsTaskbar.setProgressMode(
+                                TaskbarProgressMode.normal);
+                          },
+                          child: const Text('normal'),
+                        ),
+                        const SizedBox(
+                          width: 4.0,
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            WindowsTaskbar.setProgressMode(
+                                TaskbarProgressMode.paused);
+                          },
+                          child: const Text('paused'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Card(
+              elevation: 2.0,
+              margin: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'WindowsTaskbar.setProgress',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Text(
+                      'Sets progress.',
+                    ),
+                    const SizedBox(
+                      height: 12.0,
+                    ),
+                    Row(
+                      children: [
+                        Slider(
+                          value: value,
+                          min: 0.0,
+                          max: 1.0,
+                          onChanged: (v) {
+                            WindowsTaskbar.setProgress(v * 100 ~/ 1, 100);
+                            setState(() {
+                              value = v;
+                            });
+                          },
+                        )
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Card(
+              elevation: 2.0,
+              margin: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'WindowsTaskbar.setThumbnailTooltip',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Text(
+                      'Sets thumbnail tooltip.',
+                    ),
+                    const SizedBox(
+                      height: 12.0,
+                    ),
+                    TextField(
+                      decoration: const InputDecoration(
+                        label: Text('Enter a tooltip'),
+                      ),
+                      onChanged: (value) {
+                        WindowsTaskbar.setThumbnailTooltip(value);
+                      },
                     ),
                   ],
                 ),
