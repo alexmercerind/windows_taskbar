@@ -80,6 +80,26 @@ WindowsTaskbarPlugin::WindowsTaskbarPlugin(
   channel_->SetMethodCallHandler([this](const auto& call, auto result) {
     HandleMethodCall(call, std::move(result));
   });
+  registrar_->RegisterTopLevelWindowProcDelegate(
+      [=](HWND hwnd, UINT message, WPARAM wparam,
+          LPARAM lparam) -> std::optional<HRESULT> {
+        {
+          switch (message) {
+            case WM_COMMAND: {
+              int const button_id = LOWORD(wparam);
+              if (button_id > 40000) {
+                channel_->InvokeMethod(
+                    "WM_COMMAND",
+                    std::make_unique<flutter::EncodableValue>(button_id));
+              }
+              break;
+            }
+            default:
+              break;
+          }
+          return std::nullopt;
+        }
+      });
 }
 
 WindowsTaskbarPlugin::~WindowsTaskbarPlugin() {}

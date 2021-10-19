@@ -21,17 +21,17 @@ class _MyAppState extends State<MyApp> {
         ThumbnailToolbarButton(
           ThumbnailToolbarAssetIcon('res/folder.ico'),
           'Button 1',
-          () {},
+          (button) {},
         ),
         ThumbnailToolbarButton(
           ThumbnailToolbarAssetIcon('res/pictures.ico'),
           'Button 2',
-          () {},
+          (button) {},
         ),
         ThumbnailToolbarButton(
           ThumbnailToolbarAssetIcon('res/sync.ico'),
           'Button 3',
-          () {},
+          (button) {},
         ),
       ],
     );
@@ -44,7 +44,7 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('windows_taskbar'),
         ),
-        body: const Center(),
+        body: Center(),
       ),
     );
   }

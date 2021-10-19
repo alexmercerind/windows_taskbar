@@ -30,8 +30,19 @@ const String _kSetProgress = "SetProgress";
 const String _kSetThumbnailToolbar = "SetThumbnailToolbar";
 
 /// Method channel for making native WIN32 calls.
-const MethodChannel _kChannel =
-    MethodChannel('com.alexmercerind/windows_taskbar');
+final MethodChannel _kChannel =
+    const MethodChannel('com.alexmercerind/windows_taskbar')
+      ..setMethodCallHandler((call) async {
+        switch (call.method) {
+          case 'WM_COMMAND':
+            {
+              _callbacks[call.arguments]?.call();
+              break;
+            }
+          default:
+            break;
+        }
+      });
 
 /// Declares mode of a [ThumbnailToolbarButton].
 /// Analog of `THUMBBUTTONFLAGS` in WIN32 API.
@@ -77,7 +88,7 @@ class ThumbnailToolbarButton {
   final int mode;
 
   /// Called when button is clicked from the toolbar.
-  final void Function() onClick;
+  final void Function(ThumbnailToolbarButton) onClick;
 
   /// Internally served id of the button.
   late int id;
@@ -90,6 +101,9 @@ class ThumbnailToolbarButton {
         ThumbnailToolbarButtonMode.dismissionClick,
   }) {
     id = _thumbnailToolbarButtonId++;
+    _callbacks[id] = () {
+      onClick(this);
+    };
   }
 
   /// Conversion to `flutter::EncodableMap` for method channel transfer.
@@ -123,3 +137,6 @@ class WindowsTaskbar {
 
 /// Global index for creating new thumbnail toolbar buttons & assigning unique id.
 int _thumbnailToolbarButtonId = 40001;
+
+/// Stores [ThumbnailToolbarButton.onClick] callbacks for invoking in future.
+Map<int, void Function()> _callbacks = {};
