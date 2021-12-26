@@ -42,6 +42,21 @@
 
 namespace {
 
+// Convert string encoded in UTF-8 to wstring.
+// Returns an empty std::wstring on failure.
+std::wstring Utf16FromUtf8(std::string string) {
+  int size_needed = MultiByteToWideChar(CP_UTF8, 0, string.c_str(), -1, NULL, 0);
+  if (size_needed == 0) {
+    return std::wstring();
+  }
+  std::wstring wstrTo(size_needed, 0);
+  int converted_length = MultiByteToWideChar(CP_UTF8, 0, string.c_str(), -1, &wstrTo[0], size_needed);
+  if (converted_length == 0) {
+    return std::wstring();
+  }
+  return wstrTo;
+}  
+
 class WindowsTaskbarPlugin : public flutter::Plugin {
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows* registrar);
@@ -157,7 +172,7 @@ void WindowsTaskbarPlugin::HandleMethodCall(
           ::ImageList_AddIcon(
               image_list,
               (HICON)LoadImage(
-                  0, std::wstring(icon.begin(), icon.end()).c_str(), IMAGE_ICON,
+                  0, Utf16FromUtf8(icon).c_str(), IMAGE_ICON,
                   GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CXSMICON),
                   LR_LOADFROMFILE | LR_LOADTRANSPARENT));
         }
@@ -182,7 +197,7 @@ void WindowsTaskbarPlugin::HandleMethodCall(
                 thumb_buttons[i].iBitmap = i;
                 ::StringCchCopy(
                     thumb_buttons[i].szTip, ARRAYSIZE(thumb_buttons[i].szTip),
-                    std::wstring(tooltip.begin(), tooltip.end()).c_str());
+                    Utf16FromUtf8(tooltip).c_str());
               } else {
                 thumb_buttons[i].dwMask = THB_FLAGS;
                 thumb_buttons[i].dwFlags = THBF_HIDDEN;
@@ -217,7 +232,7 @@ void WindowsTaskbarPlugin::HandleMethodCall(
                             IID_PPV_ARGS(&taskbar_list));
     taskbar_list->SetThumbnailTooltip(
         ::GetAncestor(registrar_->GetView()->GetNativeWindow(), GA_ROOT),
-        std::wstring(tooltip.begin(), tooltip.end()).c_str());
+        Utf16FromUtf8(tooltip).c_str());
     taskbar_list->Release();
     result->Success(flutter::EncodableValue(nullptr));
   } else {
