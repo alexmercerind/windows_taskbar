@@ -61,6 +61,8 @@ class WindowsTaskbarPlugin : public flutter::Plugin {
   static constexpr auto kSetThumbnailToolbar = "SetThumbnailToolbar";
   static constexpr auto kSetThumbnailTooltip = "SetThumbnailTooltip";
   static constexpr auto kSetFlashTaskbar = "SetFlashTaskbar";
+  static constexpr auto kSetOverlayIcon = "SetOverlayIcon";
+  static constexpr auto kResetOverlayIcon = "ResetOverlayIcon";
 
   void HandleMethodCall(
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
@@ -238,6 +240,40 @@ void WindowsTaskbarPlugin::HandleMethodCall(
         ::GetAncestor(registrar_->GetView()->GetNativeWindow(), GA_ROOT);
     flash_info.uCount = flash_count;
     ::FlashWindowEx(&flash_info);
+  } else if (method_call.method_name().compare(kSetOverlayIcon) == 0) {
+    auto icon =
+      std::get<std::string>(arguments[flutter::EncodableValue("icon")]);
+    auto altTooltip =
+      std::get<std::string>(arguments[flutter::EncodableValue("altTooltip")]);
+    auto image = (HICON)LoadImage(
+                  0, Utf16FromUtf8(icon).c_str(), IMAGE_ICON,
+                  GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CXSMICON),
+                  LR_LOADFROMFILE | LR_LOADTRANSPARENT);
+    ITaskbarList3* taskbar_list;
+    HRESULT hr;
+    hr = ::CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER,
+                            IID_PPV_ARGS(&taskbar_list));
+    if (SUCCEEDED(hr)) {
+      taskbar_list->SetOverlayIcon(
+          ::GetAncestor(registrar_->GetView()->GetNativeWindow(), GA_ROOT), 
+          image, 
+          Utf16FromUtf8(altTooltip).c_str());
+    }
+    taskbar_list->Release();
+    DestroyIcon(image);
+    result->Success(flutter::EncodableValue(nullptr));
+  } else if (method_call.method_name().compare(kResetOverlayIcon) == 0) {
+    ITaskbarList3* taskbar_list;
+    HRESULT hr;
+    hr = ::CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER,
+                            IID_PPV_ARGS(&taskbar_list));
+    if (SUCCEEDED(hr)) {
+      taskbar_list->SetOverlayIcon(
+          ::GetAncestor(registrar_->GetView()->GetNativeWindow(), GA_ROOT), 
+          nullptr, 
+          Utf16FromUtf8("").c_str());
+    }
+    taskbar_list->Release();
     result->Success(flutter::EncodableValue(nullptr));
   } else {
     result->NotImplemented();

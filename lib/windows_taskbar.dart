@@ -24,6 +24,12 @@ const String _kSetThumbnailTooltip = 'SetThumbnailTooltip';
 /// Flashes app icon on the taskbar.
 const String _kSetFlashTaskbar = 'SetFlashTaskbar';
 
+/// Sets overlay icon (a badge)
+const String _kSetOverlayIcon = 'SetOverlayIcon';
+
+/// Removes overlay icon (a badge)
+const String _kResetOverlayIcon = 'ResetOverlayIcon';
+
 /// Method channel for making native WIN32 calls.
 final MethodChannel _kChannel =
     const MethodChannel('com.alexmercerind/windows_taskbar')
@@ -287,6 +293,20 @@ class WindowsTaskbar {
         'timeout': 0,
       },
     );
+  }
+
+  static Future<void> setOverlayIcon({String? icon, String altTooltip = ''}) {
+    return _kChannel.invokeMethod(
+      _kSetOverlayIcon,
+      {
+        'icon': icon,
+        'altTooltip': altTooltip,
+      },
+    );
+  }
+
+  static Future<void> resetOverlayIcon() {
+    return _kChannel.invokeMethod(_kResetOverlayIcon, {});
   }
 }
 
