@@ -5,7 +5,7 @@
 
 ```yaml
 dependencies: 
-  windows_taskbar: ^0.0.1
+  windows_taskbar: ^1.0.0
 ```
 
 ## Demo
@@ -24,19 +24,19 @@ Checkout the example Flutter application [here](https://github.com/alexmercerind
 WindowsTaskbar.setThumbnailToolbar(
   [
   ThumbnailToolbarButton(
-    ThumbnailToolbarAssetIcon('res/previous.ico'),
-      'Button 1',
+    ThumbnailToolbarAssetIcon('assets/camera.ico'),
+      'Turn On Camera',
       () {},
     ),
     ThumbnailToolbarButton(
-      ThumbnailToolbarAssetIcon('res/pause.ico'),
-      'Button 2',
+      ThumbnailToolbarAssetIcon('assets/microphone.ico'),
+      'Mute',
       () {},
       mode: ThumbnailToolbarButtonMode.disabled | ThumbnailToolbarButtonMode.dismissionClick,
     ),
     ThumbnailToolbarButton(
-      ThumbnailToolbarAssetIcon('res/next.ico'),
-      'Button 3',
+      ThumbnailToolbarAssetIcon('assets/end_call.ico'),
+      'Disconnect',
       () {},
     ),
   ],
@@ -64,14 +64,31 @@ WindowsTaskbar.setProgress(69, 100);
 **Set thumbnail tooltip**
 
 ```dart
-WindowsTaskbar.setThumbnailTooltip('Awesome Flutter window.);
+WindowsTaskbar.setThumbnailTooltip('Awesome Flutter window.');
+```
+
+**Flash windows taskbar app icon**
+
+```dart
+WindowsTaskbar.flashTaskbarAppIcon(
+  mode: TaskbarFlashMode.all | TaskbarFlashMode.timernofg,
+  timeout: const Duration(milliseconds: 500),
+);
+```
+
+**Stop flashing windows taskbar app icon**
+
+```dart
+WindowsTaskbar.stopFlashingTaskbarAppIcon();
 ```
 
 ## License
 
-GNU Lesser General Public License v2.1
+Copyright © 2021 & 2022, Hitesh Kumar Saini <<saini123hitesh@gmail.com>>
 
-Copyright © 2021, Hitesh Kumar Saini <<saini123hitesh@gmail.com>>
+This library & all the work in this repository is under MIT license that can be found in the LICENSE file.
 
-Contributions welcomed.
 
+## Donate 
+
+Consider donating me at https://www.paypal.me/alexmercerind if you like the plugin. So that I can atleast pay my internet bill.
