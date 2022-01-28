@@ -30,42 +30,42 @@ class _MyAppState extends State<MyApp> {
     WindowsTaskbar.setThumbnailToolbar(
       [
         ThumbnailToolbarButton(
-          ThumbnailToolbarAssetIcon('res/folder.ico'),
+          ThumbnailToolbarAssetIcon('assets/folder.ico'),
           'Button 1',
           () {
             setState(() {
               lastTooltip = 'Button 1';
-              lastIcon = 'res/folder.ico';
+              lastIcon = 'assets/folder.ico';
             });
           },
         ),
         ThumbnailToolbarButton(
-          ThumbnailToolbarAssetIcon('res/pictures.ico'),
+          ThumbnailToolbarAssetIcon('assets/pictures.ico'),
           'Button 2',
           () {
             setState(() {
               lastTooltip = 'Button 2';
-              lastIcon = 'res/pictures.ico';
+              lastIcon = 'assets/pictures.ico';
             });
           },
         ),
         ThumbnailToolbarButton(
-          ThumbnailToolbarAssetIcon('res/sync.ico'),
+          ThumbnailToolbarAssetIcon('assets/sync.ico'),
           'Button 3',
           () {
             setState(() {
               lastTooltip = 'Button 3';
-              lastIcon = 'res/sync.ico';
+              lastIcon = 'assets/sync.ico';
             });
           },
         ),
         ThumbnailToolbarButton(
-          ThumbnailToolbarAssetIcon('res/music.ico'),
+          ThumbnailToolbarAssetIcon('assets/music.ico'),
           'Button 4',
           () {
             setState(() {
               lastTooltip = 'Button 4';
-              lastIcon = 'res/music.ico';
+              lastIcon = 'assets/music.ico';
             });
           },
         ),
@@ -311,6 +311,71 @@ class _MyAppState extends State<MyApp> {
                       onChanged: (value) {
                         WindowsTaskbar.setThumbnailTooltip(value);
                       },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Card(
+              elevation: 2.0,
+              margin: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'WindowsTaskbar.flashTaskbar',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Text(
+                      'Flashes app icon on the taskbar.\nGenerally used to draw user attention when something needs to be approved/rejected or fixed manually.\n\nA lot of options are available to configure the behaviour of this method.',
+                    ),
+                    const SizedBox(
+                      height: 12.0,
+                    ),
+                    ElevatedButton(
+                      onPressed: () => WindowsTaskbar.flashTaskbarAppIcon(
+                        mode: TaskbarFlashMode.all,
+                        timeout: const Duration(milliseconds: 100),
+                      ),
+                      child: const Text('Start Flashing'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Card(
+              elevation: 2.0,
+              margin: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'WindowsTaskbar.stopFlashingTaskbar',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      'Stops flashing the taskbar app icon.\nUndoes the results achieved by [WindowsTaskbar.flashTaskbar].',
+                    ),
+                    SizedBox(
+                      height: 12.0,
+                    ),
+                    ElevatedButton(
+                      onPressed: WindowsTaskbar.stopFlashingTaskbarAppIcon,
+                      child: Text('Stop Flashing'),
                     ),
                   ],
                 ),
