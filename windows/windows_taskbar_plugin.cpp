@@ -1,23 +1,10 @@
-
-/*
- *  This file is part of windows_taskbar
- * (https://github.com/alexmercerind/windows_taskbar).
- *
- *  windows_taskbar is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
- *  the Free Software Foundation, either version 2.1 of the License, or
- *  (at your option) any later version.
- *
- *  windows_taskbar is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with windows_taskbar. If not, see <https://www.gnu.org/licenses/>.
- *
- *  Copyright 2021, Hitesh Kumar Saini <saini123hitesh@gmail.com>.
- */
+/// This file is a part of windows_taskbar
+/// (https://github.com/alexmercerind/windows_taskbar).
+///
+/// Copyright (c) 2021 & 2022, Hitesh Kumar Saini <saini123hitesh@gmail.com>.
+/// All rights reserved.
+/// Use of this source code is governed by MIT license that can be found in the
+/// LICENSE file.
 
 #pragma once
 
@@ -25,15 +12,14 @@
 #define UNICODE
 #endif
 
-#include <Windows.h>
-#include <strsafe.h>
-#include <ShObjIdl.h>
+#include "include/windows_taskbar/windows_taskbar_plugin.h"
 
+#include <ShObjIdl.h>
+#include <Windows.h>
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
-
-#include "include/windows_taskbar/windows_taskbar_plugin.h"
+#include <strsafe.h>
 
 #pragma comment(lib, "comctl32.lib")
 #pragma comment( \
@@ -45,17 +31,19 @@ namespace {
 // Convert string encoded in UTF-8 to wstring.
 // Returns an empty std::wstring on failure.
 std::wstring Utf16FromUtf8(std::string string) {
-  int size_needed = MultiByteToWideChar(CP_UTF8, 0, string.c_str(), -1, NULL, 0);
+  int size_needed =
+      MultiByteToWideChar(CP_UTF8, 0, string.c_str(), -1, NULL, 0);
   if (size_needed == 0) {
     return std::wstring();
   }
   std::wstring wstrTo(size_needed, 0);
-  int converted_length = MultiByteToWideChar(CP_UTF8, 0, string.c_str(), -1, &wstrTo[0], size_needed);
+  int converted_length = MultiByteToWideChar(CP_UTF8, 0, string.c_str(), -1,
+                                             &wstrTo[0], size_needed);
   if (converted_length == 0) {
     return std::wstring();
   }
   return wstrTo;
-}  
+}
 
 class WindowsTaskbarPlugin : public flutter::Plugin {
  public:
@@ -72,6 +60,7 @@ class WindowsTaskbarPlugin : public flutter::Plugin {
   static constexpr auto kSetProgress = "SetProgress";
   static constexpr auto kSetThumbnailToolbar = "SetThumbnailToolbar";
   static constexpr auto kSetThumbnailTooltip = "SetThumbnailTooltip";
+  static constexpr auto kSetFlashTaskbar = "SetFlashTaskbar";
 
   void HandleMethodCall(
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
@@ -171,10 +160,10 @@ void WindowsTaskbarPlugin::HandleMethodCall(
               std::get<std::string>(data[flutter::EncodableValue("icon")]);
           ::ImageList_AddIcon(
               image_list,
-              (HICON)LoadImage(
-                  0, Utf16FromUtf8(icon).c_str(), IMAGE_ICON,
-                  GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CXSMICON),
-                  LR_LOADFROMFILE | LR_LOADTRANSPARENT));
+              (HICON)LoadImage(0, Utf16FromUtf8(icon).c_str(), IMAGE_ICON,
+                               GetSystemMetrics(SM_CXSMICON),
+                               GetSystemMetrics(SM_CXSMICON),
+                               LR_LOADFROMFILE | LR_LOADTRANSPARENT));
         }
         if (image_list) {
           hr = taskbar_list->ThumbBarSetImageList(
@@ -195,9 +184,9 @@ void WindowsTaskbarPlugin::HandleMethodCall(
                     (THUMBBUTTONFLAGS)mode | THBF_ENABLED;
                 thumb_buttons[i].iId = kBaseThumbnailToolbarButtonId + i;
                 thumb_buttons[i].iBitmap = i;
-                ::StringCchCopy(
-                    thumb_buttons[i].szTip, ARRAYSIZE(thumb_buttons[i].szTip),
-                    Utf16FromUtf8(tooltip).c_str());
+                ::StringCchCopy(thumb_buttons[i].szTip,
+                                ARRAYSIZE(thumb_buttons[i].szTip),
+                                Utf16FromUtf8(tooltip).c_str());
               } else {
                 thumb_buttons[i].dwMask = THB_FLAGS;
                 thumb_buttons[i].dwFlags = THBF_HIDDEN;
@@ -235,11 +224,26 @@ void WindowsTaskbarPlugin::HandleMethodCall(
         Utf16FromUtf8(tooltip).c_str());
     taskbar_list->Release();
     result->Success(flutter::EncodableValue(nullptr));
+  } else if (method_call.method_name().compare(kSetFlashTaskbar) == 0) {
+    auto mode = std::get<int32_t>(arguments[flutter::EncodableValue("mode")]);
+    auto flash_count =
+        std::get<int32_t>(arguments[flutter::EncodableValue("flashCount")]);
+    auto timeout =
+        std::get<int32_t>(arguments[flutter::EncodableValue("timeout")]);
+    FLASHWINFO flash_info;
+    flash_info.cbSize = sizeof(flash_info);
+    flash_info.dwFlags = mode;
+    flash_info.dwTimeout = timeout;
+    flash_info.hwnd =
+        ::GetAncestor(registrar_->GetView()->GetNativeWindow(), GA_ROOT);
+    flash_info.uCount = flash_count;
+    ::FlashWindowEx(&flash_info);
+    result->Success(flutter::EncodableValue(nullptr));
   } else {
     result->NotImplemented();
   }
 }
-}
+}  // namespace
 
 void WindowsTaskbarPluginRegisterWithRegistrar(
     FlutterDesktopPluginRegistrarRef registrar) {
