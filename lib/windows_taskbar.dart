@@ -1,22 +1,8 @@
-/*
- *  This file is part of windows_taskbar
- * (https://github.com/alexmercerind/windows_taskbar).
- *
- *  windows_taskbar is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
- *  the Free Software Foundation, either version 2.1 of the License, or
- *  (at your option) any later version.
- *
- *  windows_taskbar is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with windows_taskbar. If not, see <https://www.gnu.org/licenses/>.
- *
- *  Copyright 2021, Hitesh Kumar Saini <saini123hitesh@gmail.com>.
- */
+/// This file is a part of windows_taskbar (https://github.com/alexmercerind/windows_taskbar).
+///
+/// Copyright (c) 2021 & 2022, Hitesh Kumar Saini <saini123hitesh@gmail.com>.
+/// All rights reserved.
+/// Use of this source code is governed by MIT license that can be found in the LICENSE file.
 
 import 'dart:io';
 
@@ -34,6 +20,9 @@ const String _kSetThumbnailToolbar = 'SetThumbnailToolbar';
 
 /// Sets thumbnail tooltip.
 const String _kSetThumbnailTooltip = 'SetThumbnailTooltip';
+
+/// Flashes app icon on the taskbar.
+const String _kSetFlashTaskbar = 'SetFlashTaskbar';
 
 /// Method channel for making native WIN32 calls.
 final MethodChannel _kChannel =
@@ -85,6 +74,28 @@ class TaskbarProgressMode {
 
   /// Paused progress state of taskbar app icon.
   static const int paused = 0x8;
+}
+
+/// Determines how taskbar app icon should be flashed.
+class TaskbarFlashMode {
+  /// Stop flashing. The system restores the window to its original state.
+  static const int stop = 0;
+
+  /// Flash the window caption.
+  static const int caption = 1;
+
+  /// Flash the taskbar button.
+  static const int tray = 2;
+
+  /// Flash both the window caption and taskbar button.
+  /// This is equivalent to setting the `caption | tray` flags.
+  static const int all = 3;
+
+  /// Flash continuously, until the `stop` flag is set.
+  static const int timer = 4;
+
+  /// Flash continuously until the window comes to the foreground.
+  static const int timernofg = 12;
 }
 
 /// Helper class to retrieve path of the icon asset.
@@ -235,6 +246,45 @@ class WindowsTaskbar {
       _kSetThumbnailTooltip,
       {
         'tooltip': tooltip,
+      },
+    );
+  }
+
+  /// Flashes app icon on the taskbar.
+  /// Generally used to draw user attention when something needs to be approved/rejected or fixed manually.
+  ///
+  /// * [mode] determines how the taskbar app icon should be flashed. See [TaskbarFlashMode] for more details.
+  ///
+  /// * [flashCount] sets how many times the taskbar app icon should be flashed.
+  ///
+  /// * [timeout] sets the interval timeout between each flash. If passed as `0`, it uses default cursor blink rate.
+  ///
+  static Future<void> flashTaskbarAppIcon({
+    int mode = TaskbarFlashMode.all | TaskbarFlashMode.timernofg,
+    int flashCount = 2147483647,
+    Duration timeout = Duration.zero,
+  }) {
+    return _kChannel.invokeMethod(
+      _kSetFlashTaskbar,
+      {
+        'mode': mode,
+        'flashCount': flashCount,
+        'timeout': timeout.inMilliseconds,
+      },
+    );
+  }
+
+  /// Stops flashing the taskbar app icon.
+  ///
+  /// Undoes the results achieved by [WindowsTaskbar.flashTaskbarAppIcon].
+  ///
+  static Future<void> stopFlashingTaskbarAppIcon() {
+    return _kChannel.invokeMethod(
+      _kSetFlashTaskbar,
+      {
+        'mode': TaskbarFlashMode.stop,
+        'flashCount': 0,
+        'timeout': 0,
       },
     );
   }
