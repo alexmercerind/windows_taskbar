@@ -295,6 +295,13 @@ class WindowsTaskbar {
     );
   }
 
+  /// Set icon on top of taskbar app icon
+  /// Generally used to draw user attention when got unread events
+  ///
+  /// * [icon] a path to *.ico icon which will be imposed
+  ///
+  /// * [altTooltip] system tooltip to overlay
+  ///
   static Future<void> setOverlayIcon({String? icon, String altTooltip = ''}) {
     return _kChannel.invokeMethod(
       _kSetOverlayIcon,
@@ -305,6 +312,9 @@ class WindowsTaskbar {
     );
   }
 
+  /// Reset (hides) overlay icon that set by [setOverlayIcon]
+  /// Generally used to draw user attention when got unread events
+  ///
   static Future<void> resetOverlayIcon() {
     return _kChannel.invokeMethod(_kResetOverlayIcon, {});
   }
