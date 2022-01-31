@@ -381,6 +381,68 @@ class _MyAppState extends State<MyApp> {
                 ),
               ),
             ),
+            Card(
+              elevation: 2.0,
+              margin: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'WindowsTaskbar.setOverlayIcon',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Text(
+                      'Set icon on top of taskbar app icon',
+                    ),
+                    const SizedBox(
+                      height: 12.0,
+                    ),
+                    ElevatedButton(
+                      onPressed: () => WindowsTaskbar.setOverlayIcon(icon: 'assets/red_slash.ico'),
+                      child: const Text('Set overlay icon'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Card(
+              elevation: 2.0,
+              margin: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'WindowsTaskbar.resetOverlayIcon',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Text(
+                      'Reset (hides) overlay icon that set by [WindowsTaskbar.setOverlayIcon]',
+                    ),
+                    const SizedBox(
+                      height: 12.0,
+                    ),
+                    ElevatedButton(
+                      onPressed: () => WindowsTaskbar.resetOverlayIcon(),
+                      child: const Text('Reset overlay icon'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
