@@ -7,7 +7,8 @@ project(${PROJECT_NAME} LANGUAGES CXX)
 set(PLUGIN_NAME "windows_taskbar_plugin")
 
 add_library(${PLUGIN_NAME} SHARED
-  "windows_taskbar_plugin.cpp"
+  "windows_taskbar.cc"
+  "windows_taskbar_plugin.cc"
 )
 apply_standard_settings(${PLUGIN_NAME})
 set_target_properties(${PLUGIN_NAME} PROPERTIES
