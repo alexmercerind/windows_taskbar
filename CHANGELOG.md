@@ -1,3 +1,14 @@
+## 1.1.0
+
+- Added `WindowsTaskbar.setOverlayIcon` & `WindowsTaskbar.resetOverlayIcon` (@nikitatg).
+- Move implementation to separate translation unit & make methods non-inline (@alexmercerind).
+- Now platform channel calls raise errors correctly by checking `HRESULT` (@alexmercerind).
+- Deprecated methods:
+  - `WindowsTaskbar.clearThumbnailToolbar` is now `WindowsTaskbar.resetThumbnailToolbar`.
+  - `WindowsTaskbar.setFlashTaskbarAppIcon` is now `WindowsTaskbar.setFlashTaskbarAppIcon`.
+  - `WindowsTaskbar.stopFlashingTaskbarAppIcon` is now `WindowsTaskbar.resetFlashTaskbarAppIcon`.
+  - The change has been made to fix inconsistency in names.
+
 ## 1.0.0
 
 - Implement `WindowsTaskbar.flashTaskbarAppIcon` & `WindowsTaskbar.stopFlashingTaskbarAppIcon` (@alexmercerind).
