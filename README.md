@@ -82,6 +82,18 @@ WindowsTaskbar.flashTaskbarAppIcon(
 WindowsTaskbar.stopFlashingTaskbarAppIcon();
 ```
 
+**Set overlay icon (a badge)**
+
+```dart
+WindowsTaskbar.setOverlayIcon(icon: 'res/circle.ico', altTooltip: 'Alternative tooltip for badge');
+```
+
+**Remove overlay icon (a badge)**
+
+```dart
+WindowsTaskbar.resetOverlayIcon();
+```
+
 ## License
 
 Copyright © 2021 & 2022, Hitesh Kumar Saini <<saini123hitesh@gmail.com>>
