@@ -142,7 +142,7 @@ class _MyAppState extends State<MyApp> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
                     Text(
-                      'WindowsTaskbar.clearThumbnailToolbar',
+                      'WindowsTaskbar.resetThumbnailToolbar',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                       ),
@@ -154,8 +154,8 @@ class _MyAppState extends State<MyApp> {
                       height: 12.0,
                     ),
                     ElevatedButton(
-                      onPressed: WindowsTaskbar.clearThumbnailToolbar,
-                      child: Text('Clear'),
+                      onPressed: WindowsTaskbar.resetThumbnailToolbar,
+                      child: Text('Reset'),
                     ),
                   ],
                 ),
@@ -328,7 +328,7 @@ class _MyAppState extends State<MyApp> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'WindowsTaskbar.flashTaskbar',
+                      'WindowsTaskbar.setFlashTaskbarAppIcon',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                       ),
@@ -340,8 +340,9 @@ class _MyAppState extends State<MyApp> {
                       height: 12.0,
                     ),
                     ElevatedButton(
-                      onPressed: () => WindowsTaskbar.flashTaskbarAppIcon(
+                      onPressed: () => WindowsTaskbar.setFlashTaskbarAppIcon(
                         mode: TaskbarFlashMode.all,
+                        flashCount: 500,
                         timeout: const Duration(milliseconds: 100),
                       ),
                       child: const Text('Start Flashing'),
@@ -362,19 +363,19 @@ class _MyAppState extends State<MyApp> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
                     Text(
-                      'WindowsTaskbar.stopFlashingTaskbar',
+                      'WindowsTaskbar.resetFlashTaskbarAppIcon',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
-                      'Stops flashing the taskbar app icon.\nUndoes the results achieved by [WindowsTaskbar.flashTaskbar].',
+                      'Stops flashing the taskbar app icon.\nUndoes the results achieved by [WindowsTaskbar.setFlashTaskbarAppIcon].',
                     ),
                     SizedBox(
                       height: 12.0,
                     ),
                     ElevatedButton(
-                      onPressed: WindowsTaskbar.stopFlashingTaskbarAppIcon,
+                      onPressed: WindowsTaskbar.resetFlashTaskbarAppIcon,
                       child: Text('Stop Flashing'),
                     ),
                   ],
@@ -399,13 +400,16 @@ class _MyAppState extends State<MyApp> {
                       ),
                     ),
                     const Text(
-                      'Set icon on top of taskbar app icon',
+                      'Set icon on top of taskbar app icon.',
                     ),
                     const SizedBox(
                       height: 12.0,
                     ),
                     ElevatedButton(
-                      onPressed: () => WindowsTaskbar.setOverlayIcon(icon: 'assets/red_slash.ico'),
+                      onPressed: () => WindowsTaskbar.setOverlayIcon(
+                        ThumbnailToolbarAssetIcon('assets/red_slash.ico'),
+                        tooltip: 'Stop',
+                      ),
                       child: const Text('Set overlay icon'),
                     ),
                   ],
@@ -430,7 +434,7 @@ class _MyAppState extends State<MyApp> {
                       ),
                     ),
                     const Text(
-                      'Reset (hides) overlay icon that set by [WindowsTaskbar.setOverlayIcon]',
+                      'Resets (hides) overlay icon that set by [WindowsTaskbar.setOverlayIcon].',
                     ),
                     const SizedBox(
                       height: 12.0,

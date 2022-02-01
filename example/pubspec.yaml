@@ -57,6 +57,7 @@ flutter:
     - assets/music.ico
     - assets/pictures.ico
     - assets/sync.ico
+    - assets/red_slash.ico
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
