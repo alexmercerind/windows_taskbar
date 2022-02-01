@@ -4,7 +4,7 @@
 ## Install
 
 ```yaml
-dependencies: 
+dependencies:
   windows_taskbar: ^1.0.0
 ```
 
@@ -14,7 +14,6 @@ Checkout the example Flutter application [here](https://github.com/alexmercerind
 
 ![](https://github.com/alexmercerind/windows_taskbar/blob/assets/bMebejv57F.gif)
 ![](https://github.com/alexmercerind/windows_taskbar/blob/assets/OdzgD1yqEO.gif)
-
 
 ## Documentation
 
@@ -43,10 +42,10 @@ WindowsTaskbar.setThumbnailToolbar(
 );
 ```
 
-**Clear thumbnail toolbar**
+**Remove thumbnail toolbar**
 
 ```dart
-WindowsTaskbar.clearThumbnailToolbar();
+WindowsTaskbar.resetThumbnailToolbar();
 ```
 
 **Set progress mode**
@@ -70,7 +69,7 @@ WindowsTaskbar.setThumbnailTooltip('Awesome Flutter window.');
 **Flash windows taskbar app icon**
 
 ```dart
-WindowsTaskbar.flashTaskbarAppIcon(
+WindowsTaskbar.setFlashTaskbarAppIcon(
   mode: TaskbarFlashMode.all | TaskbarFlashMode.timernofg,
   timeout: const Duration(milliseconds: 500),
 );
@@ -79,13 +78,16 @@ WindowsTaskbar.flashTaskbarAppIcon(
 **Stop flashing windows taskbar app icon**
 
 ```dart
-WindowsTaskbar.stopFlashingTaskbarAppIcon();
+WindowsTaskbar.resetFlashTaskbarAppIcon();
 ```
 
 **Set overlay icon (a badge)**
 
 ```dart
-WindowsTaskbar.setOverlayIcon(icon: 'res/circle.ico', altTooltip: 'Alternative tooltip for badge');
+WindowsTaskbar.setOverlayIcon(
+  ThumbnailToolbarAssetIcon('assets/red_slash.ico'),
+  tooltip: 'Stop',
+);
 ```
 
 **Remove overlay icon (a badge)**
@@ -100,7 +102,6 @@ Copyright © 2021 & 2022, Hitesh Kumar Saini <<saini123hitesh@gmail.com>>
 
 This library & all the work in this repository is under MIT license that can be found in the LICENSE file.
 
-
-## Donate 
+## Donate
 
 Consider donating me at https://www.paypal.me/alexmercerind if you like the plugin. So that I can atleast pay my internet bill.
