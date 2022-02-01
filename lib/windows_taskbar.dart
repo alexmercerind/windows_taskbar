@@ -18,16 +18,22 @@ const String _kSetProgress = 'SetProgress';
 /// Sets thumbnail toolbar.
 const String _kSetThumbnailToolbar = 'SetThumbnailToolbar';
 
+/// Removes thumbnail toolbar.
+const String _kResetThumbnailToolbar = 'ResetThumbnailToolbar';
+
 /// Sets thumbnail tooltip.
 const String _kSetThumbnailTooltip = 'SetThumbnailTooltip';
 
 /// Flashes app icon on the taskbar.
-const String _kSetFlashTaskbar = 'SetFlashTaskbar';
+const String _kSetFlashTaskbarAppIcon = 'SetFlashTaskbarAppIcon';
 
-/// Sets overlay icon (a badge)
+/// Stops flashing the taskbar app icon.
+const String _kResetFlashTaskbarAppIcon = 'ResetFlashTaskbarAppIcon';
+
+/// Sets overlay icon (a badge).
 const String _kSetOverlayIcon = 'SetOverlayIcon';
 
-/// Removes overlay icon (a badge)
+/// Removes overlay icon (a badge).
 const String _kResetOverlayIcon = 'ResetOverlayIcon';
 
 /// Method channel for making native WIN32 calls.
@@ -218,7 +224,6 @@ class WindowsTaskbar {
   ///
   static Future<void> setThumbnailToolbar(
       List<ThumbnailToolbarButton> buttons) {
-    assert(buttons.length <= _kMaximumButtonCount);
     _buttons = buttons;
     return _kChannel.invokeMethod(
       _kSetThumbnailToolbar,
@@ -231,13 +236,11 @@ class WindowsTaskbar {
   }
 
   /// Removes thumbnail toolbar for the taskbar app icon.
-  static Future<void> clearThumbnailToolbar() {
+  static Future<void> resetThumbnailToolbar() {
     _buttons = [];
     return _kChannel.invokeMethod(
-      _kSetThumbnailToolbar,
-      {
-        'buttons': [],
-      },
+      _kResetThumbnailToolbar,
+      {},
     );
   }
 
@@ -265,13 +268,14 @@ class WindowsTaskbar {
   ///
   /// * [timeout] sets the interval timeout between each flash. If passed as `0`, it uses default cursor blink rate.
   ///
-  static Future<void> flashTaskbarAppIcon({
+  static Future<void> setFlashTaskbarAppIcon({
     int mode = TaskbarFlashMode.all | TaskbarFlashMode.timernofg,
-    int flashCount = 2147483647,
+    int flashCount = 5,
     Duration timeout = Duration.zero,
   }) {
+    assert(flashCount <= 2147483647);
     return _kChannel.invokeMethod(
-      _kSetFlashTaskbar,
+      _kSetFlashTaskbarAppIcon,
       {
         'mode': mode,
         'flashCount': flashCount,
@@ -282,46 +286,69 @@ class WindowsTaskbar {
 
   /// Stops flashing the taskbar app icon.
   ///
-  /// Undoes the results achieved by [WindowsTaskbar.flashTaskbarAppIcon].
+  /// Undoes the results achieved by [WindowsTaskbar.setFlashTaskbarAppIcon].
   ///
-  static Future<void> stopFlashingTaskbarAppIcon() {
+  static Future<void> resetFlashTaskbarAppIcon() {
     return _kChannel.invokeMethod(
-      _kSetFlashTaskbar,
-      {
-        'mode': TaskbarFlashMode.stop,
-        'flashCount': 0,
-        'timeout': 0,
-      },
+      _kResetFlashTaskbarAppIcon,
+      {},
     );
   }
 
   /// Set icon on top of taskbar app icon
   /// Generally used to draw user attention when got unread events
   ///
-  /// * [icon] a path to *.ico icon which will be imposed
+  /// * [icon] takes [ThumbnailToolbarAssetIcon] & sets it as overlay icon.
   ///
-  /// * [altTooltip] system tooltip to overlay
+  /// * [tooltip] sets system tooltip to overlay on the icon.
   ///
-  static Future<void> setOverlayIcon({String? icon, String altTooltip = ''}) {
+  static Future<void> setOverlayIcon(
+    ThumbnailToolbarAssetIcon icon, {
+    String tooltip = '',
+  }) {
     return _kChannel.invokeMethod(
       _kSetOverlayIcon,
       {
-        'icon': icon,
-        'altTooltip': altTooltip,
+        'icon': icon.path,
+        'tooltip': tooltip,
       },
     );
   }
 
-  /// Reset (hides) overlay icon that set by [setOverlayIcon]
-  /// Generally used to draw user attention when got unread events
+  /// Resets (hides) overlay icon that set by [setOverlayIcon]
+  ///
+  /// Generally used to indicate current app state e.g. count of unread messages.
   ///
   static Future<void> resetOverlayIcon() {
-    return _kChannel.invokeMethod(_kResetOverlayIcon, {});
+    return _kChannel.invokeMethod(
+      _kResetOverlayIcon,
+      {},
+    );
   }
-}
 
-/// Maximum button count in the thumbnail toolbar.
-const int _kMaximumButtonCount = 7;
+  /// Deprecated API present to avoid breaking changes.
+  @Deprecated('Use [WindowsTaskbar.resetThumbnailToolbar] instead.')
+  static Future<void> clearThumbnailToolbar() =>
+      WindowsTaskbar.resetThumbnailToolbar();
+
+  /// Deprecated API present to avoid breaking changes.
+  @Deprecated('Use [WindowsTaskbar.resetThumbnailToolbar] instead.')
+  static Future<void> flashTaskbarAppIcon({
+    int mode = TaskbarFlashMode.all | TaskbarFlashMode.timernofg,
+    int flashCount = 5,
+    Duration timeout = Duration.zero,
+  }) =>
+      WindowsTaskbar.setFlashTaskbarAppIcon(
+        mode: mode,
+        flashCount: flashCount,
+        timeout: timeout,
+      );
+
+  /// Deprecated API present to avoid breaking changes.
+  @Deprecated('Use [WindowsTaskbar.resetThumbnailToolbar] instead.')
+  static Future<void> stopFlashingTaskbarAppIcon() =>
+      WindowsTaskbar.resetFlashTaskbarAppIcon();
+}
 
 /// Last [List] of thumbnail toolbar buttons passed to [WindowsTaskbar.setThumbnailToolbar].
 List<ThumbnailToolbarButton> _buttons = [];
