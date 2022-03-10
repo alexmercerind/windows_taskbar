@@ -1,6 +1,6 @@
 name: windows_taskbar
 description: Flutter plugin serving utilities related to Windows taskbar.
-version: 1.1.0
+version: 1.1.0+1
 homepage: https://github.com/alexmercerind/windows_taskbar
 repository: https://github.com/alexmercerind/windows_taskbar
 

@@ -1,3 +1,7 @@
+## 1.1.0+1
+
+- Add documentation website.
+
 ## 1.1.0
 
 - Added `WindowsTaskbar.setOverlayIcon` & `WindowsTaskbar.resetOverlayIcon` (@nikitatg).
