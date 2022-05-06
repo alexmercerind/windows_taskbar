@@ -36,6 +36,12 @@ const String _kSetOverlayIcon = 'SetOverlayIcon';
 /// Removes overlay icon (a badge).
 const String _kResetOverlayIcon = 'ResetOverlayIcon';
 
+/// Set window title.
+const String _kSetWindowTitle = 'SetWindowTitle';
+
+/// Reset window title.
+const String _kResetWindowTitle = 'ResetWindowTitle';
+
 /// Method channel for making native WIN32 calls.
 final MethodChannel _kChannel =
     const MethodChannel('com.alexmercerind/windows_taskbar')
@@ -322,6 +328,30 @@ class WindowsTaskbar {
   static Future<void> resetOverlayIcon() {
     return _kChannel.invokeMethod(
       _kResetOverlayIcon,
+      {},
+    );
+  }
+
+  /// Resets (hides) overlay icon that set by [setOverlayIcon]
+  ///
+  /// Generally used to indicate current app state e.g. count of unread messages.
+  ///
+  static Future<void> setWindowTitle(String title) {
+    return _kChannel.invokeMethod(
+      _kSetWindowTitle,
+      {
+        'title': title,
+      },
+    );
+  }
+
+  /// Resets (hides) overlay icon that set by [setOverlayIcon]
+  ///
+  /// Generally used to indicate current app state e.g. count of unread messages.
+  ///
+  static Future<void> resetWindowTitle() {
+    return _kChannel.invokeMethod(
+      _kResetWindowTitle,
       {},
     );
   }

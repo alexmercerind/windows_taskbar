@@ -447,6 +447,72 @@ class _MyAppState extends State<MyApp> {
                 ),
               ),
             ),
+            Card(
+              elevation: 2.0,
+              margin: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'WindowsTaskbar.setWindowTitle',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Text(
+                      'Sets window title.',
+                    ),
+                    const SizedBox(
+                      height: 12.0,
+                    ),
+                    TextField(
+                      decoration: const InputDecoration(
+                        label: Text('Enter a title'),
+                      ),
+                      onChanged: (value) {
+                        WindowsTaskbar.setWindowTitle(value);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Card(
+              elevation: 2.0,
+              margin: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'WindowsTaskbar.resetWindowTitle',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      'Resets window title.',
+                    ),
+                    SizedBox(
+                      height: 12.0,
+                    ),
+                    ElevatedButton(
+                      onPressed: WindowsTaskbar.resetWindowTitle,
+                      child: Text('Reset'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
