@@ -8,6 +8,8 @@
 
 #include "windows_taskbar.h"
 
+#include <WinUser.h>
+
 #include "utils.h"
 
 WindowsTaskbar::WindowsTaskbar(HWND window) : window_(window) {
@@ -146,4 +148,21 @@ bool WindowsTaskbar::SetOverlayIcon(std::string icon, std::string tooltip) {
 bool WindowsTaskbar::ResetOverlayIcon() {
   HRESULT hr = taskbar_->SetOverlayIcon(window_, NULL, L"");
   return SUCCEEDED(hr);
+}
+
+bool WindowsTaskbar::SetWindowTitle(std::string title) {
+  if (window_title_ == nullptr) {
+    window_title_ =
+        std::make_unique<wchar_t[]>(::GetWindowTextLengthW(window_) + 1);
+    ::GetWindowTextW(window_, window_title_.get(),
+                     ::GetWindowTextLengthW(window_) + 1);
+  }
+  return ::SetWindowTextW(window_, Utf16FromUtf8(title).c_str());
+}
+
+bool WindowsTaskbar::ResetWindowTitle() {
+  if (window_title_ != nullptr) {
+    ::SetWindowTextW(window_, window_title_.get());
+  }
+  return TRUE;
 }

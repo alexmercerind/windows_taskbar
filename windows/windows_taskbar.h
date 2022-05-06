@@ -13,6 +13,7 @@
 #include <Windows.h>
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -50,10 +51,15 @@ class WindowsTaskbar {
 
   bool ResetOverlayIcon();
 
+  bool SetWindowTitle(std::string title);
+
+  bool ResetWindowTitle();
+
  private:
   HWND window_ = nullptr;
   ITaskbarList3* taskbar_ = nullptr;
   bool thumb_buttons_added_ = false;
+  std::unique_ptr<wchar_t[]> window_title_ = nullptr;
 };
 
 #endif

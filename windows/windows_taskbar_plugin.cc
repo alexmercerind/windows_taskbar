@@ -41,6 +41,8 @@ class WindowsTaskbarPlugin : public flutter::Plugin {
   static constexpr auto kResetFlashTaskbarAppIcon = "ResetFlashTaskbarAppIcon";
   static constexpr auto kSetOverlayIcon = "SetOverlayIcon";
   static constexpr auto kResetOverlayIcon = "ResetOverlayIcon";
+  static constexpr auto kSetWindowTitle = "SetWindowTitle";
+  static constexpr auto kResetWindowTitle = "ResetWindowTitle";
 
   void HandleMethodCall(
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
@@ -187,6 +189,20 @@ void WindowsTaskbarPlugin::HandleMethodCall(
       result->Success(flutter::EncodableValue(nullptr));
     } else {
       result->Error("-1", GetErrorString(kResetOverlayIcon));
+    }
+  } else if (method_call.method_name().compare(kSetWindowTitle) == 0) {
+    auto title =
+        std::get<std::string>(arguments[flutter::EncodableValue("title")]);
+    if (windows_taskbar_->SetWindowTitle(title)) {
+      result->Success(flutter::EncodableValue(nullptr));
+    } else {
+      result->Error("-1", GetErrorString(kSetWindowTitle));
+    }
+  } else if (method_call.method_name().compare(kResetWindowTitle) == 0) {
+    if (windows_taskbar_->ResetWindowTitle()) {
+      result->Success(flutter::EncodableValue(nullptr));
+    } else {
+      result->Error("-1", GetErrorString(kResetWindowTitle));
     }
   } else {
     result->NotImplemented();
