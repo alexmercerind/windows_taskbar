@@ -98,7 +98,7 @@ WindowsTaskbar.resetOverlayIcon();
 
 ## License
 
-Copyright © 2021 & 2022, Hitesh Kumar Saini <<saini123hitesh@gmail.com>>
+Copyright © 2021 & onwards, Hitesh Kumar Saini <<saini123hitesh@gmail.com>>
 
 This library & all the work in this repository is under MIT license that can be found in the LICENSE file.
 
