@@ -15,34 +15,44 @@
 WindowsTaskbar::WindowsTaskbar(HWND window) : window_(window) {
   ::CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER,
                      IID_PPV_ARGS(&taskbar_));
+  taskbar_->HrInit();
 }
 
 WindowsTaskbar::~WindowsTaskbar() {
-  taskbar_->Release();
-  taskbar_ = nullptr;
+  if (taskbar_) {
+    taskbar_->Release();
+    taskbar_ = nullptr;
+  }
 }
 
 bool WindowsTaskbar::SetProgressMode(int32_t mode) {
-  HRESULT hr = taskbar_->SetProgressState(window_, static_cast<TBPFLAG>(mode));
-  return SUCCEEDED(hr);
+  if (taskbar_) {
+    HRESULT hr =
+        taskbar_->SetProgressState(window_, static_cast<TBPFLAG>(mode));
+    return SUCCEEDED(hr);
+  }
+  return false;
 }
 
 bool WindowsTaskbar::SetProgress(int32_t completed, int32_t total) {
-  HRESULT hr = taskbar_->SetProgressValue(window_, completed, total);
-  return SUCCEEDED(hr);
+  if (taskbar_) {
+    HRESULT hr = taskbar_->SetProgressValue(window_, completed, total);
+    return SUCCEEDED(hr);
+  }
+  return false;
 }
 
 bool WindowsTaskbar::SetThumbnailToolbar(
     std::vector<ThumbnailToolbarButton> buttons) {
   if (buttons.size() > kMaxThumbButtonCount) return false;
-  HRESULT hr = taskbar_->HrInit();
-  if (SUCCEEDED(hr)) {
+  if (taskbar_) {
     auto image_list = ::ImageList_Create(::GetSystemMetrics(SM_CXSMICON),
                                          ::GetSystemMetrics(SM_CXSMICON),
                                          ILC_MASK | ILC_COLOR32, 0, 0);
     // Add all images to the |image_list| & set using |ThumbBarSetImageList|.
     for (const auto& button : buttons) {
-      // Using |IMAGE_ICON| as default image type since it allows transparency.
+      // Using |IMAGE_ICON| as default image type since it allows
+      // transparency.
       ImageList_AddIcon(
           image_list,
           (HICON)LoadImage(0, Utf16FromUtf8(button.icon).c_str(), IMAGE_ICON,
@@ -51,14 +61,15 @@ bool WindowsTaskbar::SetThumbnailToolbar(
                            LR_LOADFROMFILE | LR_LOADTRANSPARENT));
     }
     if (image_list) {
-      hr = taskbar_->ThumbBarSetImageList(window_, image_list);
+      HRESULT hr = taskbar_->ThumbBarSetImageList(window_, image_list);
       // |ITaskbarList3| can have a maximum of 7 buttons.
-      // The number of buttons set using |ThumbBarAddButtons| cannot be changed
-      // afterwards during whole window's lifecycle. Thus, setting maximum i.e.
-      // 7 buttons on every call & adding |THBF_HIDDEN| flag to hide the
-      // remaining additional buttons. On subsequent calls,
-      // |ThumbBarUpdateButtons| is used to update the thumbnail toolbar buttons
-      // again adding |THBF_HIDDEN| flag to remaining additional buttons.
+      // The number of buttons set using |ThumbBarAddButtons| cannot be
+      // changed afterwards during whole window's lifecycle. Thus, setting
+      // maximum i.e. 7 buttons on every call & adding |THBF_HIDDEN| flag to
+      // hide the remaining additional buttons. On subsequent calls,
+      // |ThumbBarUpdateButtons| is used to update the thumbnail toolbar
+      // buttons again adding |THBF_HIDDEN| flag to remaining additional
+      // buttons.
       THUMBBUTTON thumb_buttons[kMaxThumbButtonCount];
       if (SUCCEEDED(hr)) {
         for (uint32_t i = 0; i < kMaxThumbButtonCount; i++) {
@@ -107,62 +118,83 @@ bool WindowsTaskbar::ResetThumbnailToolbar() {
 }
 
 bool WindowsTaskbar::SetThumbnailTooltip(std::string tooltip) {
-  HRESULT hr =
-      taskbar_->SetThumbnailTooltip(window_, Utf16FromUtf8(tooltip).c_str());
-  return SUCCEEDED(hr);
+  if (taskbar_) {
+    HRESULT hr =
+        taskbar_->SetThumbnailTooltip(window_, Utf16FromUtf8(tooltip).c_str());
+    return SUCCEEDED(hr);
+  }
+  return false;
 }
 
 bool WindowsTaskbar::SetFlashTaskbarAppIcon(int32_t mode, int32_t flash_count,
                                             int32_t timeout) {
-  FLASHWINFO flash_info;
-  flash_info.cbSize = sizeof(flash_info);
-  flash_info.dwFlags = mode;
-  flash_info.dwTimeout = timeout;
-  flash_info.hwnd = window_;
-  flash_info.uCount = flash_count;
-  HRESULT hr = ::FlashWindowEx(&flash_info);
-  return SUCCEEDED(hr);
+  if (taskbar_) {
+    FLASHWINFO flash_info;
+    flash_info.cbSize = sizeof(flash_info);
+    flash_info.dwFlags = mode;
+    flash_info.dwTimeout = timeout;
+    flash_info.hwnd = window_;
+    flash_info.uCount = flash_count;
+    HRESULT hr = ::FlashWindowEx(&flash_info);
+    return SUCCEEDED(hr);
+  }
+  return false;
 }
 
 bool WindowsTaskbar::ResetFlashTaskbarAppIcon() {
-  FLASHWINFO flash_info;
-  flash_info.cbSize = sizeof(flash_info);
-  flash_info.dwFlags = FLASHW_STOP;
-  flash_info.dwTimeout = 0;
-  flash_info.hwnd = window_;
-  flash_info.uCount = 0;
-  HRESULT hr = ::FlashWindowEx(&flash_info);
-  return SUCCEEDED(hr);
+  if (taskbar_) {
+    FLASHWINFO flash_info;
+    flash_info.cbSize = sizeof(flash_info);
+    flash_info.dwFlags = FLASHW_STOP;
+    flash_info.dwTimeout = 0;
+    flash_info.hwnd = window_;
+    flash_info.uCount = 0;
+    HRESULT hr = ::FlashWindowEx(&flash_info);
+    return SUCCEEDED(hr);
+  }
+  return false;
 }
 
 bool WindowsTaskbar::SetOverlayIcon(std::string icon, std::string tooltip) {
-  // Using |IMAGE_ICON|.
-  auto image = (HICON)LoadImage(
-      0, Utf16FromUtf8(icon).c_str(), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON),
-      GetSystemMetrics(SM_CXSMICON), LR_LOADFROMFILE | LR_LOADTRANSPARENT);
-  HRESULT hr =
-      taskbar_->SetOverlayIcon(window_, image, Utf16FromUtf8(tooltip).c_str());
-  return SUCCEEDED(hr);
+  if (taskbar_) {
+    // Using |IMAGE_ICON|.
+    auto image = (HICON)LoadImage(0, Utf16FromUtf8(icon).c_str(), IMAGE_ICON,
+                                  GetSystemMetrics(SM_CXSMICON),
+                                  GetSystemMetrics(SM_CXSMICON),
+                                  LR_LOADFROMFILE | LR_LOADTRANSPARENT);
+    HRESULT hr = taskbar_->SetOverlayIcon(window_, image,
+                                          Utf16FromUtf8(tooltip).c_str());
+    return SUCCEEDED(hr);
+  }
+  return false;
 }
 
 bool WindowsTaskbar::ResetOverlayIcon() {
-  HRESULT hr = taskbar_->SetOverlayIcon(window_, NULL, L"");
-  return SUCCEEDED(hr);
+  if (taskbar_) {
+    HRESULT hr = taskbar_->SetOverlayIcon(window_, NULL, L"");
+    return SUCCEEDED(hr);
+  }
+  return false;
 }
 
 bool WindowsTaskbar::SetWindowTitle(std::string title) {
-  if (window_title_ == nullptr) {
-    window_title_ =
-        std::make_unique<wchar_t[]>(::GetWindowTextLengthW(window_) + 1);
-    ::GetWindowTextW(window_, window_title_.get(),
-                     ::GetWindowTextLengthW(window_) + 1);
+  if (taskbar_) {
+    if (window_title_ == nullptr) {
+      window_title_ =
+          std::make_unique<wchar_t[]>(::GetWindowTextLengthW(window_) + 1);
+      ::GetWindowTextW(window_, window_title_.get(),
+                       ::GetWindowTextLengthW(window_) + 1);
+    }
+    return ::SetWindowTextW(window_, Utf16FromUtf8(title).c_str());
   }
-  return ::SetWindowTextW(window_, Utf16FromUtf8(title).c_str());
+  return false;
 }
 
 bool WindowsTaskbar::ResetWindowTitle() {
-  if (window_title_ != nullptr) {
-    ::SetWindowTextW(window_, window_title_.get());
+  if (taskbar_) {
+    if (window_title_ != nullptr) {
+      return ::SetWindowTextW(window_, window_title_.get());
+    }
   }
-  return TRUE;
+  return true;
 }

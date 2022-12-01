@@ -42,21 +42,6 @@ const String _kSetWindowTitle = 'SetWindowTitle';
 /// Reset window title.
 const String _kResetWindowTitle = 'ResetWindowTitle';
 
-/// Method channel for making native WIN32 calls.
-final MethodChannel _kChannel =
-    const MethodChannel('com.alexmercerind/windows_taskbar')
-      ..setMethodCallHandler((call) async {
-        switch (call.method) {
-          case 'WM_COMMAND':
-            {
-              _buttons[call.arguments].onClick.call();
-              break;
-            }
-          default:
-            break;
-        }
-      });
-
 /// Declares mode of a [ThumbnailToolbarButton].
 /// Analog of `THUMBBUTTONFLAGS` in WIN32 API.
 ///
@@ -230,7 +215,8 @@ class WindowsTaskbar {
   ///
   static Future<void> setThumbnailToolbar(
       List<ThumbnailToolbarButton> buttons) {
-    _buttons = buttons;
+    _buttons.clear();
+    _buttons.addAll(buttons);
     return _kChannel.invokeMethod(
       _kSetThumbnailToolbar,
       {
@@ -243,7 +229,7 @@ class WindowsTaskbar {
 
   /// Removes thumbnail toolbar for the taskbar app icon.
   static Future<void> resetThumbnailToolbar() {
-    _buttons = [];
+    _buttons.clear();
     return _kChannel.invokeMethod(
       _kResetThumbnailToolbar,
       {},
@@ -378,7 +364,24 @@ class WindowsTaskbar {
   @Deprecated('Use [WindowsTaskbar.resetThumbnailToolbar] instead.')
   static Future<void> stopFlashingTaskbarAppIcon() =>
       WindowsTaskbar.resetFlashTaskbarAppIcon();
-}
 
-/// Last [List] of thumbnail toolbar buttons passed to [WindowsTaskbar.setThumbnailToolbar].
-List<ThumbnailToolbarButton> _buttons = [];
+  /// Last [List] of thumbnail toolbar buttons passed to [WindowsTaskbar.setThumbnailToolbar].
+  static final List<ThumbnailToolbarButton> _buttons = [];
+
+  /// Method channel for making native WIN32 calls.
+  static final MethodChannel _kChannel =
+      const MethodChannel('com.alexmercerind/windows_taskbar')
+        ..setMethodCallHandler(
+          (call) async {
+            switch (call.method) {
+              case 'WM_COMMAND':
+                {
+                  _buttons[call.arguments].onClick.call();
+                  break;
+                }
+              default:
+                break;
+            }
+          },
+        );
+}
