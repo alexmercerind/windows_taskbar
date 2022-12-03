@@ -23,12 +23,12 @@ struct ThumbnailToolbarButton {
   int32_t mode;
 };
 
-static constexpr uint32_t kMinThumbButtonId = 40001;
-static constexpr uint32_t kMaxThumbButtonCount = 7;
+static constexpr auto kMinThumbButtonId = 40001;
+static constexpr auto kMaxThumbButtonCount = 7;
 
 class WindowsTaskbar {
  public:
-  WindowsTaskbar(HWND window);
+  WindowsTaskbar(HWND window, bool ensure_visibility = true);
 
   ~WindowsTaskbar();
 
@@ -57,6 +57,7 @@ class WindowsTaskbar {
 
  private:
   HWND window_ = nullptr;
+  bool ensure_visibility_ = false;
   ITaskbarList3* taskbar_ = nullptr;
   bool thumb_buttons_added_ = false;
   std::unique_ptr<wchar_t[]> window_title_ = nullptr;
