@@ -55,6 +55,8 @@ class WindowsTaskbar {
 
   bool ResetWindowTitle();
 
+  bool IsTaskbarVisible();
+
  private:
   HWND window_ = nullptr;
   bool ensure_visibility_ = false;

@@ -199,3 +199,23 @@ bool WindowsTaskbar::ResetWindowTitle() {
   }
   return true;
 }
+
+bool WindowsTaskbar::IsTaskbarVisible() {
+  HWND hTaskbarWnd;
+  hTaskbarWnd = ::FindWindowW(L"Shell_TrayWnd", NULL);
+  HMONITOR hMonitor = MonitorFromWindow(hTaskbarWnd , MONITOR_DEFAULTTONEAREST);
+  MONITORINFO info = { sizeof(MONITORINFO) };
+
+  if (GetMonitorInfo(hMonitor, &info)) {
+    RECT rect;
+    GetWindowRect(hTaskbarWnd , &rect);
+    if ((rect.top >= info.rcMonitor.bottom - 4) ||
+        (rect.right <= 2) ||
+        (rect.bottom <= 4) ||
+        (rect.left >= info.rcMonitor.right - 2))
+    return false;
+
+    return true;
+  }
+  return true;
+}

@@ -342,6 +342,14 @@ class WindowsTaskbar {
     );
   }
 
+  /// Returns `bool` - Whether taskbar is visible (in case of autohiding).
+  static Future<bool> isTaskbarVisible() async {
+    return await _kChannel.invokeMethod(
+      'isTaskbarVisible',
+      {},
+    );
+  }
+
   /// Deprecated API present to avoid breaking changes.
   @Deprecated('Use [WindowsTaskbar.resetThumbnailToolbar] instead.')
   static Future<void> clearThumbnailToolbar() =>
