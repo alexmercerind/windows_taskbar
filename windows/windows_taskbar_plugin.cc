@@ -43,7 +43,7 @@ class WindowsTaskbarPlugin : public flutter::Plugin {
   static constexpr auto kResetOverlayIcon = "ResetOverlayIcon";
   static constexpr auto kSetWindowTitle = "SetWindowTitle";
   static constexpr auto kResetWindowTitle = "ResetWindowTitle";
-  static constexpr auto kIsTaskbarVisible = "isTaskbarVisible";
+  static constexpr auto kIsTaskbarVisible = "IsTaskbarVisible";
 
   void HandleMethodCall(
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
