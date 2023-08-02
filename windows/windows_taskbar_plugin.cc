@@ -43,6 +43,7 @@ class WindowsTaskbarPlugin : public flutter::Plugin {
   static constexpr auto kResetOverlayIcon = "ResetOverlayIcon";
   static constexpr auto kSetWindowTitle = "SetWindowTitle";
   static constexpr auto kResetWindowTitle = "ResetWindowTitle";
+  static constexpr auto kIsTaskbarVisible = "IsTaskbarVisible";
 
   void HandleMethodCall(
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
@@ -204,6 +205,9 @@ void WindowsTaskbarPlugin::HandleMethodCall(
     } else {
       result->Error("-1", GetErrorString(kResetWindowTitle));
     }
+  } else if (method_call.method_name().compare(kIsTaskbarVisible) == 0) {
+    bool value = windows_taskbar_->IsTaskbarVisible();
+    result->Success(flutter::EncodableValue(value));
   } else {
     result->NotImplemented();
   }
