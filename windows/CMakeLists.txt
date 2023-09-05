@@ -9,6 +9,7 @@ set(PLUGIN_NAME "windows_taskbar_plugin")
 add_library(${PLUGIN_NAME} SHARED
   "windows_taskbar.cc"
   "windows_taskbar_plugin.cc"
+  "utils.cc"
 )
 apply_standard_settings(${PLUGIN_NAME})
 set_target_properties(${PLUGIN_NAME} PROPERTIES
