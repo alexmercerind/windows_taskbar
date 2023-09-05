@@ -45,14 +45,13 @@ class WindowsTaskbarPlugin : public flutter::Plugin {
   static constexpr auto kResetWindowTitle = "ResetWindowTitle";
   static constexpr auto kIsTaskbarVisible = "IsTaskbarVisible";
 
-  int window_proc_id = -1;
-
   void HandleMethodCall(
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
 
   std::string GetErrorString(std::string method_name);
 
+  int32_t window_proc_id_ = -1;
   flutter::PluginRegistrarWindows* registrar_ = nullptr;
   std::unique_ptr<WindowsTaskbar> windows_taskbar_ = nullptr;
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> channel_ =
@@ -74,7 +73,7 @@ WindowsTaskbarPlugin::WindowsTaskbarPlugin(
   channel_->SetMethodCallHandler([this](const auto& call, auto result) {
     HandleMethodCall(call, std::move(result));
   });
-  window_proc_id = registrar_->RegisterTopLevelWindowProcDelegate(
+  window_proc_id_ = registrar_->RegisterTopLevelWindowProcDelegate(
       [=](HWND hwnd, UINT message, WPARAM wparam,
           LPARAM lparam) -> std::optional<HRESULT> {
         {
@@ -101,7 +100,7 @@ WindowsTaskbarPlugin::WindowsTaskbarPlugin(
 }
 
 WindowsTaskbarPlugin::~WindowsTaskbarPlugin() {
-  registrar_->UnregisterTopLevelWindowProcDelegate(window_proc_id);
+  registrar_->UnregisterTopLevelWindowProcDelegate(window_proc_id_);
 }
 
 void WindowsTaskbarPlugin::HandleMethodCall(
