@@ -51,6 +51,7 @@ class WindowsTaskbarPlugin : public flutter::Plugin {
 
   std::string GetErrorString(std::string method_name);
 
+  int32_t window_proc_id_ = -1;
   flutter::PluginRegistrarWindows* registrar_ = nullptr;
   std::unique_ptr<WindowsTaskbar> windows_taskbar_ = nullptr;
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> channel_ =
@@ -72,7 +73,7 @@ WindowsTaskbarPlugin::WindowsTaskbarPlugin(
   channel_->SetMethodCallHandler([this](const auto& call, auto result) {
     HandleMethodCall(call, std::move(result));
   });
-  registrar_->RegisterTopLevelWindowProcDelegate(
+  window_proc_id_ = registrar_->RegisterTopLevelWindowProcDelegate(
       [=](HWND hwnd, UINT message, WPARAM wparam,
           LPARAM lparam) -> std::optional<HRESULT> {
         {
@@ -86,6 +87,7 @@ WindowsTaskbarPlugin::WindowsTaskbarPlugin(
                 channel_->InvokeMethod(
                     "WM_COMMAND",
                     std::make_unique<flutter::EncodableValue>(index));
+                return 0;
               }
               break;
             }
@@ -97,7 +99,9 @@ WindowsTaskbarPlugin::WindowsTaskbarPlugin(
       });
 }
 
-WindowsTaskbarPlugin::~WindowsTaskbarPlugin() {}
+WindowsTaskbarPlugin::~WindowsTaskbarPlugin() {
+  registrar_->UnregisterTopLevelWindowProcDelegate(window_proc_id_);
+}
 
 void WindowsTaskbarPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
@@ -214,6 +218,7 @@ void WindowsTaskbarPlugin::HandleMethodCall(
     result->NotImplemented();
   }
 }
+
 }  // namespace
 
 std::string WindowsTaskbarPlugin::GetErrorString(std::string method_name) {
