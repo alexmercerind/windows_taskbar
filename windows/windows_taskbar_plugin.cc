@@ -18,8 +18,8 @@
 
 #pragma comment(lib, "comctl32.lib")
 #pragma comment( \
-    linker,      \
-    "\"/manifestdependency:type='Win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+        linker,  \
+            "\"/manifestdependency:type='Win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 namespace {
 
@@ -51,9 +51,10 @@ class WindowsTaskbarPlugin : public flutter::Plugin {
 
   std::string GetErrorString(std::string method_name);
 
-  flutter::PluginRegistrarWindows* registrar_;
-  std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> channel_;
+  flutter::PluginRegistrarWindows* registrar_ = nullptr;
   std::unique_ptr<WindowsTaskbar> windows_taskbar_ = nullptr;
+  std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> channel_ =
+      nullptr;
 };
 
 void WindowsTaskbarPlugin::RegisterWithRegistrar(
@@ -77,10 +78,11 @@ WindowsTaskbarPlugin::WindowsTaskbarPlugin(
         {
           switch (message) {
             case WM_COMMAND: {
-              int const button_id = LOWORD(wparam);
-              if (button_id >= kMinThumbButtonId &&
-                  button_id < kMinThumbButtonId + kMaxThumbButtonCount) {
-                int32_t index = button_id - kMinThumbButtonId;
+              auto button_id = LOWORD(wparam);
+              if (button_id >= WindowsTaskbar::kMinThumbButtonID &&
+                  button_id < WindowsTaskbar::kMinThumbButtonID +
+                                  WindowsTaskbar::kMaxThumbButtonCount) {
+                auto index = button_id - WindowsTaskbar::kMinThumbButtonID;
                 channel_->InvokeMethod(
                     "WM_COMMAND",
                     std::make_unique<flutter::EncodableValue>(index));
@@ -108,7 +110,7 @@ void WindowsTaskbarPlugin::HandleMethodCall(
   if (method_call.method_name().compare(kSetProgressMode) == 0) {
     auto mode = std::get<int32_t>(arguments[flutter::EncodableValue("mode")]);
     if (windows_taskbar_->SetProgressMode(mode)) {
-      result->Success(flutter::EncodableValue(nullptr));
+      result->Success(flutter::EncodableValue(std::monostate{}));
     } else {
       result->Error("-1", GetErrorString(kSetProgressMode));
     }
@@ -117,7 +119,7 @@ void WindowsTaskbarPlugin::HandleMethodCall(
         std::get<int32_t>(arguments[flutter::EncodableValue("completed")]);
     auto total = std::get<int32_t>(arguments[flutter::EncodableValue("total")]);
     if (windows_taskbar_->SetProgress(completed, total)) {
-      result->Success(flutter::EncodableValue(nullptr));
+      result->Success(flutter::EncodableValue(std::monostate{}));
     } else {
       result->Error("-1", GetErrorString(kSetProgress));
     }
@@ -139,13 +141,13 @@ void WindowsTaskbarPlugin::HandleMethodCall(
       thumbnail_toolbar_buttons.emplace_back(thumbnail_toolbar_button);
     }
     if (windows_taskbar_->SetThumbnailToolbar(thumbnail_toolbar_buttons)) {
-      result->Success(flutter::EncodableValue(nullptr));
+      result->Success(flutter::EncodableValue(std::monostate{}));
     } else {
       result->Error("-1", GetErrorString(kSetThumbnailToolbar));
     }
   } else if (method_call.method_name().compare(kResetThumbnailToolbar) == 0) {
     if (windows_taskbar_->ResetThumbnailToolbar()) {
-      result->Success(flutter::EncodableValue(nullptr));
+      result->Success(flutter::EncodableValue(std::monostate{}));
     } else {
       result->Error("-1", GetErrorString(kResetThumbnailToolbar));
     }
@@ -153,7 +155,7 @@ void WindowsTaskbarPlugin::HandleMethodCall(
     auto tooltip =
         std::get<std::string>(arguments[flutter::EncodableValue("tooltip")]);
     if (windows_taskbar_->SetThumbnailTooltip(tooltip)) {
-      result->Success(flutter::EncodableValue(nullptr));
+      result->Success(flutter::EncodableValue(std::monostate{}));
     } else {
       result->Error("-1", GetErrorString(kSetThumbnailTooltip));
     }
@@ -164,14 +166,14 @@ void WindowsTaskbarPlugin::HandleMethodCall(
     auto timeout =
         std::get<int32_t>(arguments[flutter::EncodableValue("timeout")]);
     if (windows_taskbar_->SetFlashTaskbarAppIcon(mode, flash_count, timeout)) {
-      result->Success(flutter::EncodableValue(nullptr));
+      result->Success(flutter::EncodableValue(std::monostate{}));
     } else {
       result->Error("-1", GetErrorString(kSetFlashTaskbarAppIcon));
     }
   } else if (method_call.method_name().compare(kResetFlashTaskbarAppIcon) ==
              0) {
     if (windows_taskbar_->ResetFlashTaskbarAppIcon()) {
-      result->Success(flutter::EncodableValue(nullptr));
+      result->Success(flutter::EncodableValue(std::monostate{}));
     } else {
       result->Error("-1", GetErrorString(kResetFlashTaskbarAppIcon));
     }
@@ -181,13 +183,13 @@ void WindowsTaskbarPlugin::HandleMethodCall(
     auto tooltip =
         std::get<std::string>(arguments[flutter::EncodableValue("tooltip")]);
     if (windows_taskbar_->SetOverlayIcon(icon, tooltip)) {
-      result->Success(flutter::EncodableValue(nullptr));
+      result->Success(flutter::EncodableValue(std::monostate{}));
     } else {
       result->Error("-1", GetErrorString(kSetOverlayIcon));
     }
   } else if (method_call.method_name().compare(kResetOverlayIcon) == 0) {
     if (windows_taskbar_->ResetOverlayIcon()) {
-      result->Success(flutter::EncodableValue(nullptr));
+      result->Success(flutter::EncodableValue(std::monostate{}));
     } else {
       result->Error("-1", GetErrorString(kResetOverlayIcon));
     }
@@ -195,18 +197,18 @@ void WindowsTaskbarPlugin::HandleMethodCall(
     auto title =
         std::get<std::string>(arguments[flutter::EncodableValue("title")]);
     if (windows_taskbar_->SetWindowTitle(title)) {
-      result->Success(flutter::EncodableValue(nullptr));
+      result->Success(flutter::EncodableValue(std::monostate{}));
     } else {
       result->Error("-1", GetErrorString(kSetWindowTitle));
     }
   } else if (method_call.method_name().compare(kResetWindowTitle) == 0) {
     if (windows_taskbar_->ResetWindowTitle()) {
-      result->Success(flutter::EncodableValue(nullptr));
+      result->Success(flutter::EncodableValue(std::monostate{}));
     } else {
       result->Error("-1", GetErrorString(kResetWindowTitle));
     }
   } else if (method_call.method_name().compare(kIsTaskbarVisible) == 0) {
-    bool value = windows_taskbar_->IsTaskbarVisible();
+    auto value = windows_taskbar_->IsTaskbarVisible();
     result->Success(flutter::EncodableValue(value));
   } else {
     result->NotImplemented();
@@ -215,7 +217,7 @@ void WindowsTaskbarPlugin::HandleMethodCall(
 }  // namespace
 
 std::string WindowsTaskbarPlugin::GetErrorString(std::string method_name) {
-  return "WindowsTaskbar::" + method_name + " call failed.";
+  return "ERROR: WindowsTaskbar::" + method_name;
 }
 
 void WindowsTaskbarPluginRegisterWithRegistrar(
