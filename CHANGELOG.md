@@ -1,3 +1,9 @@
+## 1.1.2
+
+- feat: `WindowsTaskbar.isTaskbarVisible`
+- fix: call `UnregisterTopLevelWindowProcDelegate` in `WindowsTaskbarPlugin` destructor
+- refactor: improve implementation consistency
+
 ## 1.1.1
 
 - feat: `WindowsTaskbar.setWindowTitle` & `WindowsTaskbar.resetWindowTitle`
@@ -22,8 +28,8 @@
 
 ## 0.0.1
 
-- feat: most of the common `ITaskbarList3` Win32 APIs
-- feat: `SetProgressMode`
-- feat: `SetProgress`
-- feat: `SetThumbnailToolbar`
-- feat: `SetThumbnailTooltip`
+- feat: expose `ITaskbarList3` Win32 APIs
+- feat: `setProgressMode`
+- feat: `setProgress`
+- feat: `setThumbnailToolbar`
+- feat: `setThumbnailTooltip`
