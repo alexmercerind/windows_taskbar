@@ -43,7 +43,8 @@ class WindowsTaskbarPlugin : public flutter::Plugin {
   static constexpr auto kResetOverlayIcon = "ResetOverlayIcon";
   static constexpr auto kSetWindowTitle = "SetWindowTitle";
   static constexpr auto kResetWindowTitle = "ResetWindowTitle";
-  static constexpr auto kIsTaskbarVisible = "IsTaskbarVisible";
+
+  int window_proc_id = -1;
 
   void HandleMethodCall(
       const flutter::MethodCall<flutter::EncodableValue>& method_call,
@@ -71,7 +72,7 @@ WindowsTaskbarPlugin::WindowsTaskbarPlugin(
   channel_->SetMethodCallHandler([this](const auto& call, auto result) {
     HandleMethodCall(call, std::move(result));
   });
-  registrar_->RegisterTopLevelWindowProcDelegate(
+  window_proc_id = registrar_->RegisterTopLevelWindowProcDelegate(
       [=](HWND hwnd, UINT message, WPARAM wparam,
           LPARAM lparam) -> std::optional<HRESULT> {
         {
@@ -84,6 +85,7 @@ WindowsTaskbarPlugin::WindowsTaskbarPlugin(
                 channel_->InvokeMethod(
                     "WM_COMMAND",
                     std::make_unique<flutter::EncodableValue>(index));
+                return 0;
               }
               break;
             }
@@ -95,7 +97,9 @@ WindowsTaskbarPlugin::WindowsTaskbarPlugin(
       });
 }
 
-WindowsTaskbarPlugin::~WindowsTaskbarPlugin() {}
+WindowsTaskbarPlugin::~WindowsTaskbarPlugin() {
+  registrar_->UnregisterTopLevelWindowProcDelegate(window_proc_id);
+}
 
 void WindowsTaskbarPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
@@ -205,9 +209,6 @@ void WindowsTaskbarPlugin::HandleMethodCall(
     } else {
       result->Error("-1", GetErrorString(kResetWindowTitle));
     }
-  } else if (method_call.method_name().compare(kIsTaskbarVisible) == 0) {
-    bool value = windows_taskbar_->IsTaskbarVisible();
-    result->Success(flutter::EncodableValue(value));
   } else {
     result->NotImplemented();
   }
