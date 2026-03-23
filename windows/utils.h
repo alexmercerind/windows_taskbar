@@ -12,5 +12,6 @@
 #include <string>
 
 std::wstring Utf16FromUtf8(std::string string);
+std::string Utf8FromUtf16(std::wstring wstring);
 
 #endif

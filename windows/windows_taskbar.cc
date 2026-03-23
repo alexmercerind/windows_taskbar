@@ -10,13 +10,37 @@
 
 #include <WinUser.h>
 #include <strsafe.h>
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <comdef.h>
 
 #include "utils.h"
 
+#define LOG_ERROR(msg) { \
+  std::stringstream ss; \
+  ss << msg; \
+  last_error_ = ss.str(); \
+  std::cerr << "WindowsTaskbar Error: " << last_error_ << std::endl; \
+}
+#define LOG_HRESULT(msg, hr) { \
+  std::stringstream ss; \
+  ss << msg << " (HRESULT: 0x" << std::hex << (uint32_t)hr << std::dec << " - " << Utf8FromUtf16(_com_error(hr).ErrorMessage()) << ")"; \
+  last_error_ = ss.str(); \
+  std::cerr << "WindowsTaskbar Error: " << last_error_ << std::endl; \
+}
+
 WindowsTaskbar::WindowsTaskbar(HWND window) : window_(window) {
-  ::CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER,
-                     IID_PPV_ARGS(&taskbar_));
-  taskbar_->HrInit();
+  auto result = ::CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER,
+                                   IID_PPV_ARGS(&taskbar_));
+  if (FAILED(result)) {
+    LOG_HRESULT("CoCreateInstance(CLSID_TaskbarList) failed", result);
+  } else {
+    result = taskbar_->HrInit();
+    if (FAILED(result)) {
+      LOG_HRESULT("ITaskbarList3::HrInit failed", result);
+    }
+  }
 }
 
 WindowsTaskbar::~WindowsTaskbar() {
@@ -34,30 +58,42 @@ bool WindowsTaskbar::SetProgressMode(int32_t mode) {
   if (taskbar_) {
     auto result =
         taskbar_->SetProgressState(window_, static_cast<TBPFLAG>(mode));
+    if (FAILED(result)) {
+      LOG_HRESULT("SetProgressState failed", result);
+    }
     return SUCCEEDED(result);
   }
+  LOG_ERROR("SetProgressMode failed: taskbar_ is NULL.");
   return false;
 }
 
 bool WindowsTaskbar::SetProgress(int32_t completed, int32_t total) {
   if (!::IsWindowVisible(window_)) {
+    LOG_ERROR("SetProgress failed: Window is not visible.");
     return false;
   }
 
   if (taskbar_) {
     auto result = taskbar_->SetProgressValue(window_, completed, total);
+    if (FAILED(result)) {
+      LOG_HRESULT("SetProgressValue failed", result);
+    }
     return SUCCEEDED(result);
   }
+  LOG_ERROR("SetProgress failed: taskbar_ is NULL.");
   return false;
 }
 
 bool WindowsTaskbar::SetThumbnailToolbar(
     std::vector<ThumbnailToolbarButton> buttons) {
+  last_error_ = "";
   if (!::IsWindowVisible(window_)) {
+    LOG_ERROR("SetThumbnailToolbar failed: Window is not visible.");
     return false;
   }
 
   if (buttons.size() > kMaxThumbButtonCount) {
+    LOG_ERROR("SetThumbnailToolbar failed: Too many buttons (" << buttons.size() << "). Max is " << kMaxThumbButtonCount << ".");
     return false;
   }
 
@@ -65,19 +101,29 @@ bool WindowsTaskbar::SetThumbnailToolbar(
     auto image_list = ::ImageList_Create(::GetSystemMetrics(SM_CXSMICON),
                                          ::GetSystemMetrics(SM_CXSMICON),
                                          ILC_MASK | ILC_COLOR32, 0, 0);
+    if (!image_list) {
+      LOG_ERROR("SetThumbnailToolbar failed: ImageList_Create returned NULL.");
+    }
     // Add all images to the |image_list| & set using |ThumbBarSetImageList|.
     for (const auto& button : buttons) {
       // Using |IMAGE_ICON| as default image type since it allows
       // transparency.
-      ::ImageList_AddIcon(
-          image_list,
-          (HICON)::LoadImage(0, Utf16FromUtf8(button.icon).c_str(), IMAGE_ICON,
-                             GetSystemMetrics(SM_CXSMICON),
-                             GetSystemMetrics(SM_CXSMICON),
-                             LR_LOADFROMFILE | LR_LOADTRANSPARENT));
+      auto icon = (HICON)::LoadImage(0, Utf16FromUtf8(button.icon).c_str(), IMAGE_ICON,
+                                     GetSystemMetrics(SM_CXSMICON),
+                                     GetSystemMetrics(SM_CXSMICON),
+                                     LR_LOADFROMFILE | LR_LOADTRANSPARENT);
+      if (icon) {
+        ::ImageList_AddIcon(image_list, icon);
+        ::DestroyIcon(icon);
+      } else {
+        LOG_ERROR("SetThumbnailToolbar warning: Failed to load icon: " << button.icon);
+      }
     }
     if (image_list) {
       auto result = taskbar_->ThumbBarSetImageList(window_, image_list);
+      if (FAILED(result)) {
+        LOG_HRESULT("ThumbBarSetImageList failed", result);
+      }
       // |ITaskbarList3| can have a maximum of 7 buttons.
       // The number of buttons set using |ThumbBarAddButtons| cannot be
       // changed afterwards during whole window's lifecycle. Thus, setting
@@ -113,18 +159,30 @@ bool WindowsTaskbar::SetThumbnailToolbar(
         if (!thumb_buttons_added_) {
           result = taskbar_->ThumbBarAddButtons(window_, kMaxThumbButtonCount,
                                                 thumb_buttons);
-          thumb_buttons_added_ = true;
+          if (FAILED(result)) {
+            LOG_HRESULT("ThumbBarAddButtons failed", result);
+          } else {
+            thumb_buttons_added_ = true;
+          }
         } else {
           result = taskbar_->ThumbBarUpdateButtons(
               window_, kMaxThumbButtonCount, thumb_buttons);
+          if (FAILED(result)) {
+            LOG_HRESULT("ThumbBarUpdateButtons failed", result);
+          }
         }
         if (SUCCEEDED(result)) {
-          // Freed the |image_list|.
-          result = ::ImageList_Destroy(image_list);
-          return SUCCEEDED(result);
+          ::ImageList_Destroy(image_list);
+          return true;
         }
       }
+      // If we reached here, something failed. Cleanup image_list.
+      ::ImageList_Destroy(image_list);
+    } else {
+       LOG_ERROR("SetThumbnailToolbar failed: image_list is NULL.");
     }
+  } else {
+    LOG_ERROR("SetThumbnailToolbar failed: taskbar_ (ITaskbarList3) is NULL.");
   }
   return false;
 }
@@ -190,6 +248,9 @@ bool WindowsTaskbar::SetOverlayIcon(std::string icon, std::string tooltip) {
                                   LR_LOADFROMFILE | LR_LOADTRANSPARENT);
     auto result = taskbar_->SetOverlayIcon(window_, image,
                                            Utf16FromUtf8(tooltip).c_str());
+    if (image) {
+      ::DestroyIcon(image);
+    }
     return SUCCEEDED(result);
   }
   return false;

@@ -24,3 +24,18 @@ std::wstring Utf16FromUtf8(std::string string) {
   }
   return result;
 }
+
+std::string Utf8FromUtf16(std::wstring wstring) {
+  auto size_needed = ::WideCharToMultiByte(CP_UTF8, 0, wstring.c_str(), -1,
+                                            NULL, 0, NULL, NULL);
+  if (size_needed == 0) {
+    return std::string{};
+  }
+  auto result = std::string(size_needed, 0);
+  auto converted_length = ::WideCharToMultiByte(
+      CP_UTF8, 0, wstring.c_str(), -1, &result[0], size_needed, NULL, NULL);
+  if (converted_length == 0) {
+    return std::string{};
+  }
+  return result;
+}
