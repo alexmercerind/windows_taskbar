@@ -1,3 +1,7 @@
+## 1.1.4
+
+- fix: Improved error handling and reporting by ensuring last_error_ is reset per method call and adding descriptive logs for window visibility failures.
+
 ## 1.1.3
 
 - fix: resolve taskbar icon handle leak
