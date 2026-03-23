@@ -1,3 +1,8 @@
+## 1.1.3
+
+- fix: resolve taskbar icon handle leak
+- feat(logging): add detailed diagnostics
+
 ## 1.1.2
 
 - feat: `WindowsTaskbar.isTaskbarVisible`
