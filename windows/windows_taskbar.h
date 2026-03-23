@@ -57,11 +57,14 @@ class WindowsTaskbar {
 
   bool IsTaskbarVisible();
 
+  const std::string& GetLastError() const { return last_error_; }
+
  private:
   HWND window_ = nullptr;
   ITaskbarList3* taskbar_ = nullptr;
   bool thumb_buttons_added_ = false;
   std::unique_ptr<wchar_t[]> window_title_ = nullptr;
+  std::string last_error_;
 };
 
 #endif

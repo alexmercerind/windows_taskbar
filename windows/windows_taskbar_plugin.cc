@@ -222,7 +222,14 @@ void WindowsTaskbarPlugin::HandleMethodCall(
 }  // namespace
 
 std::string WindowsTaskbarPlugin::GetErrorString(std::string method_name) {
-  return "ERROR: WindowsTaskbar::" + method_name;
+  std::string error = "ERROR: WindowsTaskbar::" + method_name;
+  if (windows_taskbar_ != nullptr) {
+    std::string last_error = windows_taskbar_->GetLastError();
+    if (!last_error.empty()) {
+      error += " [" + last_error + "]";
+    }
+  }
+  return error;
 }
 
 void WindowsTaskbarPluginRegisterWithRegistrar(
