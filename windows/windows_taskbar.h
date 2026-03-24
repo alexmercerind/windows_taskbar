@@ -60,6 +60,8 @@ class WindowsTaskbar {
   const std::string& GetLastError() const { return last_error_; }
 
  private:
+  void ResetLastError();
+
   HWND window_ = nullptr;
   ITaskbarList3* taskbar_ = nullptr;
   bool thumb_buttons_added_ = false;

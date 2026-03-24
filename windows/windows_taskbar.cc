@@ -50,8 +50,12 @@ WindowsTaskbar::~WindowsTaskbar() {
   }
 }
 
-bool WindowsTaskbar::SetProgressMode(int32_t mode) {
+void WindowsTaskbar::ResetLastError() {
   last_error_ = "";
+}
+
+bool WindowsTaskbar::SetProgressMode(int32_t mode) {
+  ResetLastError();
   if (!::IsWindowVisible(window_)) {
     LOG_ERROR("SetProgressMode failed: Window is not visible.");
     return false;
@@ -70,7 +74,7 @@ bool WindowsTaskbar::SetProgressMode(int32_t mode) {
 }
 
 bool WindowsTaskbar::SetProgress(int32_t completed, int32_t total) {
-  last_error_ = "";
+  ResetLastError();
   if (!::IsWindowVisible(window_)) {
     LOG_ERROR("SetProgress failed: Window is not visible.");
     return false;
@@ -89,7 +93,7 @@ bool WindowsTaskbar::SetProgress(int32_t completed, int32_t total) {
 
 bool WindowsTaskbar::SetThumbnailToolbar(
     std::vector<ThumbnailToolbarButton> buttons) {
-  last_error_ = "";
+  ResetLastError();
   if (!::IsWindowVisible(window_)) {
     LOG_ERROR("SetThumbnailToolbar failed: Window is not visible.");
     return false;
@@ -191,12 +195,12 @@ bool WindowsTaskbar::SetThumbnailToolbar(
 }
 
 bool WindowsTaskbar::ResetThumbnailToolbar() {
-  last_error_ = "";
+  ResetLastError();
   return WindowsTaskbar::SetThumbnailToolbar({});
 }
 
 bool WindowsTaskbar::SetThumbnailTooltip(std::string tooltip) {
-  last_error_ = "";
+  ResetLastError();
   if (!::IsWindowVisible(window_)) {
     LOG_ERROR("SetThumbnailTooltip failed: Window is not visible.");
     return false;
@@ -212,7 +216,7 @@ bool WindowsTaskbar::SetThumbnailTooltip(std::string tooltip) {
 
 bool WindowsTaskbar::SetFlashTaskbarAppIcon(int32_t mode, int32_t flash_count,
                                             int32_t timeout) {
-  last_error_ = "";
+  ResetLastError();
   if (!::IsWindowVisible(window_)) {
     LOG_ERROR("SetFlashTaskbarAppIcon failed: Window is not visible.");
     return false;
@@ -229,7 +233,7 @@ bool WindowsTaskbar::SetFlashTaskbarAppIcon(int32_t mode, int32_t flash_count,
 }
 
 bool WindowsTaskbar::ResetFlashTaskbarAppIcon() {
-  last_error_ = "";
+  ResetLastError();
   if (!::IsWindowVisible(window_)) {
     LOG_ERROR("ResetFlashTaskbarAppIcon failed: Window is not visible.");
     return false;
@@ -246,7 +250,7 @@ bool WindowsTaskbar::ResetFlashTaskbarAppIcon() {
 }
 
 bool WindowsTaskbar::SetOverlayIcon(std::string icon, std::string tooltip) {
-  last_error_ = "";
+  ResetLastError();
   if (!::IsWindowVisible(window_)) {
     LOG_ERROR("SetOverlayIcon failed: Window is not visible.");
     return false;
@@ -269,7 +273,7 @@ bool WindowsTaskbar::SetOverlayIcon(std::string icon, std::string tooltip) {
 }
 
 bool WindowsTaskbar::ResetOverlayIcon() {
-  last_error_ = "";
+  ResetLastError();
   if (!::IsWindowVisible(window_)) {
     LOG_ERROR("ResetOverlayIcon failed: Window is not visible.");
     return false;
@@ -283,7 +287,7 @@ bool WindowsTaskbar::ResetOverlayIcon() {
 }
 
 bool WindowsTaskbar::SetWindowTitle(std::string title) {
-  last_error_ = "";
+  ResetLastError();
   if (!::IsWindowVisible(window_)) {
     LOG_ERROR("SetWindowTitle failed: Window is not visible.");
     return false;
@@ -300,7 +304,7 @@ bool WindowsTaskbar::SetWindowTitle(std::string title) {
 }
 
 bool WindowsTaskbar::ResetWindowTitle() {
-  last_error_ = "";
+  ResetLastError();
   if (!::IsWindowVisible(window_)) {
     LOG_ERROR("ResetWindowTitle failed: Window is not visible.");
     return false;
